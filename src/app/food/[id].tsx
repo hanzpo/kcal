@@ -32,7 +32,13 @@ export default function FoodDetail() {
     [servings],
   );
   const [unitIndex, setUnitIndex] = useState(0);
-  const [amountStr, setAmountStr] = useState(() => (servings.length > 0 ? '1' : '100'));
+  const [amountStr, setAmountStr] = useState('1');
+  // default amount depends on the loaded food: 1 × named serving, else 100 g
+  const [defaultApplied, setDefaultApplied] = useState(false);
+  if (food && !defaultApplied) {
+    setDefaultApplied(true);
+    if (servings.length === 0) setAmountStr('100');
+  }
 
   if (!food) return <View className="flex-1 bg-page dark:bg-page-dark" />;
 

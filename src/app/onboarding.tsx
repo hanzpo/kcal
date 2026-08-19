@@ -8,7 +8,7 @@ import { Press, PrimaryButton, SectionLabel } from '@/components/ui';
 import type { Settings } from '@/db/schema';
 import { todayStr } from '@/lib/dates';
 import { displayToKg, formatSigned, kgToDisplay } from '@/lib/format';
-import { updateSettings } from '@/repos/settings';
+import { getSettings, updateSettings } from '@/repos/settings';
 import { insertTarget } from '@/repos/targets';
 import { upsertWeight } from '@/repos/weights';
 import { deriveTargets, mifflinStJeorBmr, seedTdeeFromProfile } from '@/services/coaching';
@@ -108,20 +108,22 @@ export default function Onboarding() {
   const heightCm = useMemo(() => {
     const v = parseFloat(height);
     if (!isFinite(v) || v <= 0) return null;
-    return unit === 'kg' ? v : v * 2.54; // metric: cm, imperial: inches
+    const cm = unit === 'kg' ? v : v * 2.54; // metric: cm, imperial: inches
+    return cm >= 90 && cm <= 250 ? cm : null;
   }, [height, unit]);
 
   const weightKg = useMemo(() => {
     const v = parseFloat(weight);
     if (!isFinite(v) || v <= 0) return null;
-    return displayToKg(v, unit);
+    const kg = displayToKg(v, unit);
+    return kg >= 30 && kg <= 350 ? kg : null;
   }, [weight, unit]);
 
   const profileReady =
-    sex && heightCm && weightKg && activity && parseInt(birthYear) > 1900 && parseInt(birthYear) < 2020;
+    sex && heightCm && weightKg && parseInt(birthYear) > 1900 && parseInt(birthYear) < 2020;
 
   const preview = useMemo(() => {
-    if (!profileReady || goal == null || ratePct == null) return null;
+    if (!profileReady || !activity || goal == null || ratePct == null) return null;
     const age = new Date().getFullYear() - parseInt(birthYear);
     const profile = { sex: sex!, age, heightCm: heightCm!, weightKg: weightKg!, activityLevel: activity! };
     const tdee = seedTdeeFromProfile(profile);
@@ -162,6 +164,9 @@ export default function Onboarding() {
       tdeeAtSet: preview.tdee,
       reason: 'initial',
     });
+    // hand the gate fresh data synchronously — a stale cached settings row
+    // would bounce us straight back to onboarding
+    qc.setQueryData(['settings'], await getSettings());
     await qc.invalidateQueries();
     router.replace('/(tabs)');
   }
@@ -332,7 +337,10 @@ export default function Onboarding() {
             />
           ))}
         </View>
-        <ScrollView className="flex-1 px-6 pt-8" keyboardShouldPersistTaps="handled">
+        <ScrollView
+          className="flex-1 px-6 pt-8"
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag">
           {steps[step]}
         </ScrollView>
         <View className="flex-row gap-3 px-6 pb-6" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>

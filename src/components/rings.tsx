@@ -1,4 +1,4 @@
-import { Canvas, Path, Skia } from '@shopify/react-native-skia';
+import { Canvas, Circle, Path, Skia } from '@shopify/react-native-skia';
 import type { PropsWithChildren } from 'react';
 import { Text, View } from 'react-native';
 
@@ -17,18 +17,27 @@ export function ProgressRing({
   const r = (size - stroke) / 2;
   const cx = size / 2;
   const cy = size / 2;
-  const sweep = clamp(progress, 0, 1) * 360;
+  const sweep = clamp(progress, 0, 1) * 359.9;
 
-  const track = Skia.Path.Make();
-  track.addCircle(cx, cy, r);
-  const arc = Skia.Path.Make();
-  arc.addArc({ x: cx - r, y: cy - r, width: r * 2, height: r * 2 }, -90, sweep);
+  // arc as an SVG path (from 12 o'clock, clockwise) — avoids deprecated Path APIs
+  const rad = (deg: number) => ((deg - 90) * Math.PI) / 180;
+  const x1 = cx + r * Math.cos(rad(0));
+  const y1 = cy + r * Math.sin(rad(0));
+  const x2 = cx + r * Math.cos(rad(sweep));
+  const y2 = cy + r * Math.sin(rad(sweep));
+  const largeArc = sweep > 180 ? 1 : 0;
+  const arc =
+    sweep > 0
+      ? Skia.Path.MakeFromSVGString(
+          `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`,
+        )
+      : null;
 
   return (
     <View style={{ width: size, height: size }}>
       <Canvas style={{ width: size, height: size }}>
-        <Path path={track} style="stroke" strokeWidth={stroke} color={p.raise} strokeCap="round" />
-        {sweep > 0 ? (
+        <Circle cx={cx} cy={cy} r={r} style="stroke" strokeWidth={stroke} color={p.raise} />
+        {arc ? (
           <Path path={arc} style="stroke" strokeWidth={stroke} color={color} strokeCap="round" />
         ) : null}
       </Canvas>
