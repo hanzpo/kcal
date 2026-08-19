@@ -16,6 +16,8 @@ import { Appearance, AppState, LogBox, Text, View } from 'react-native';
 
 import { readHealthSyncPref, readThemePref } from '@/lib/prefs';
 import { importWeightsFromHealth } from '@/services/health';
+import { supabase } from '@/services/supabase';
+import { setSyncInvalidator, syncCloudSilently } from '@/services/sync';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -35,6 +37,9 @@ Appearance.setColorScheme(savedTheme === 'system' ? 'unspecified' : savedTheme);
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5_000, retry: 1 } },
 });
+
+// cloud pulls refresh whatever screen is open
+setSyncInvalidator(() => queryClient.invalidateQueries());
 
 let lastHealthSync = 0;
 async function syncHealthSilently() {
@@ -67,11 +72,20 @@ export default function RootLayout() {
         setSeeded(true);
       }
       syncHealthSilently();
+      syncCloudSilently();
     })();
 
-    // re-sync when the app returns to foreground (morning scale → open app)
+    // re-sync when the app returns to foreground (morning scale → open app);
+    // Supabase only refreshes auth tokens while foregrounded
+    supabase.auth.startAutoRefresh();
     const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'active') syncHealthSilently();
+      if (state === 'active') {
+        supabase.auth.startAutoRefresh();
+        syncHealthSilently();
+        syncCloudSilently();
+      } else {
+        supabase.auth.stopAutoRefresh();
+      }
     });
     return () => sub.remove();
   }, [migrated]);

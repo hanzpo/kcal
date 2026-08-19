@@ -25,6 +25,9 @@ import {
 } from '@/services/ai';
 import { exportAndShare, importFromFile } from '@/services/backup';
 import { setFdcApiKey } from '@/services/foodApi';
+import { supabase } from '@/services/supabase';
+import { resetSyncCursors, syncNow } from '@/services/sync';
+import type { Session } from '@supabase/supabase-js';
 
 function KeyField({
   placeholder,
@@ -66,6 +69,149 @@ function KeyField({
         </Text>
       </Press>
     </View>
+  );
+}
+
+function CloudSyncCard() {
+  const qc = useQueryClient();
+  const p = usePalette();
+  const [session, setSession] = useState<Session | null>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const [syncBusy, setSyncBusy] = useState(false);
+  const [syncResult, setSyncResult] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  const runSync = async () => {
+    setSyncBusy(true);
+    setSyncResult(null);
+    try {
+      const r = await syncNow();
+      setSyncResult(r.pulled + r.pushed > 0 ? `${r.pulled} down · ${r.pushed} up` : 'up to date');
+      if (r.pulled > 0) qc.invalidateQueries();
+    } catch {
+      setSyncResult('failed — check connection');
+    } finally {
+      setSyncBusy(false);
+    }
+  };
+
+  const authenticate = async (mode: 'signin' | 'signup') => {
+    if (!email.trim() || !password) return;
+    setBusy(true);
+    setNote(null);
+    try {
+      if (mode === 'signup') {
+        const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
+        if (error) throw error;
+        if (!data.session) {
+          setNote('Check your email for a confirmation link, then sign in.');
+          return;
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        if (error) throw error;
+      }
+      setEmail('');
+      setPassword('');
+      runSync(); // first sync migrates whatever is on this phone up / pulls the cloud down
+    } catch (e: any) {
+      setNote(e?.message ?? 'Something went wrong.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (session) {
+    return (
+      <Card className="mb-4 overflow-hidden">
+        <View className="px-4 pb-1 pt-3.5">
+          <Text className="text-[15px] font-medium text-ink dark:text-ink-inv">
+            {session.user.email} <Text className="text-good">· syncing</Text>
+          </Text>
+          <Text className="pt-0.5 text-[12px] leading-4 text-ink-mut">
+            Logs, weights, and targets back up to your private cloud and follow you to any phone.
+          </Text>
+        </View>
+        <NavRow
+          icon="arrow.triangle.2.circlepath"
+          title={syncBusy ? 'Syncing…' : 'Sync now'}
+          detail={syncResult ?? undefined}
+          onPress={syncBusy ? undefined : runSync}
+        />
+        <Divider />
+        <NavRow
+          icon="rectangle.portrait.and.arrow.right"
+          title="Sign out"
+          onPress={() =>
+            Alert.alert('Sign out?', 'Data stays on this phone and in the cloud; syncing pauses.', [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Sign out', style: 'destructive', onPress: () => supabase.auth.signOut() },
+            ])
+          }
+        />
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="mb-4 overflow-hidden">
+      <View className="px-4 pb-2 pt-3.5">
+        <Text className="text-[15px] font-medium text-ink dark:text-ink-inv">Account</Text>
+        <Text className="pt-0.5 text-[12px] leading-4 text-ink-mut">
+          Optional — sign in to back up your data and sync it across phones.
+        </Text>
+      </View>
+      <View className="gap-2 px-4 pb-3.5">
+        <View className="rounded-xl border border-line bg-page px-3 dark:border-line-dark dark:bg-page-dark">
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            placeholder="email"
+            placeholderTextColor={p.inkFaint}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            className="h-[40px] font-mono text-[13px] text-ink dark:text-ink-inv"
+          />
+        </View>
+        <View className="rounded-xl border border-line bg-page px-3 dark:border-line-dark dark:bg-page-dark">
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            placeholder="password"
+            placeholderTextColor={p.inkFaint}
+            autoCapitalize="none"
+            secureTextEntry
+            className="h-[40px] font-mono text-[13px] text-ink dark:text-ink-inv"
+          />
+        </View>
+        {note ? <Text className="text-[12px] leading-4 text-ink-mut">{note}</Text> : null}
+        <View className="flex-row gap-2 pt-1">
+          <Press
+            onPress={busy ? undefined : () => authenticate('signin')}
+            className="h-[40px] flex-1 items-center justify-center rounded-xl bg-ink dark:bg-ink-inv">
+            <Text className="text-[13px] font-semibold text-ink-inv dark:text-ink">
+              {busy ? 'Working…' : 'Sign in'}
+            </Text>
+          </Press>
+          <Press
+            onPress={busy ? undefined : () => authenticate('signup')}
+            className="h-[40px] flex-1 items-center justify-center rounded-xl bg-raise dark:bg-raise-dark">
+            <Text className="text-[13px] font-semibold text-ink dark:text-ink-inv">
+              Create account
+            </Text>
+          </Press>
+        </View>
+      </View>
+    </Card>
   );
 }
 
@@ -132,12 +278,17 @@ export default function Settings() {
   }, []);
 
   const wipe = () => {
-    Alert.alert('Erase everything?', 'All logs, weights, and foods will be permanently deleted from this phone.', [
+    Alert.alert(
+      'Erase everything?',
+      'All logs, weights, and foods will be permanently deleted from this phone. Cloud data is kept — sign back in later to restore it.',
+      [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Erase',
         style: 'destructive',
         onPress: async () => {
+          await supabase.auth.signOut().catch(() => {});
+          resetSyncCursors();
           await db.delete(logEntries);
           await db.delete(weights);
           await db.delete(targets);
@@ -336,6 +487,9 @@ export default function Settings() {
           ) : null}
         </Card>
 
+        <SectionLabel className="px-2 pb-1.5">Cloud sync</SectionLabel>
+        <CloudSyncCard />
+
         <SectionLabel className="px-2 pb-1.5">Food database</SectionLabel>
         <Card className="mb-4 overflow-hidden">
           <View className="px-4 pb-1 pt-3.5">
@@ -380,8 +534,8 @@ export default function Settings() {
         </Card>
 
         <Text className="px-2 text-[11.5px] leading-4 text-ink-faint">
-          OpenMacro · local-first macro tracker. All data lives in SQLite on this phone; export a
-          backup before switching devices.
+          OpenMacro · local-first macro tracker. All data lives in SQLite on this phone; sign in to
+          cloud sync (or export a backup) before switching devices.
         </Text>
       </ScrollView>
     </View>

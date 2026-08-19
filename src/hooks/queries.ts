@@ -5,6 +5,7 @@ import { addDaysStr, daysBetween, todayStr, type Meal } from '@/lib/dates';
 import * as coaching from '@/services/coaching';
 import * as foodApi from '@/services/foodApi';
 import * as loggingSvc from '@/services/logging';
+import { scheduleCloudSync } from '@/services/sync';
 import * as foodsRepo from '@/repos/foods';
 import * as logsRepo from '@/repos/logs';
 import * as settingsRepo from '@/repos/settings';
@@ -22,7 +23,10 @@ export function useUpdateSettings() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (patch: Partial<Settings>) => settingsRepo.updateSettings(patch),
-    onSuccess: () => qc.invalidateQueries(),
+    onSuccess: () => {
+      qc.invalidateQueries();
+      scheduleCloudSync();
+    },
   });
 }
 
@@ -72,6 +76,7 @@ function invalidateData(qc: ReturnType<typeof useQueryClient>) {
   qc.invalidateQueries({ queryKey: ['loggedDates'] });
   qc.invalidateQueries({ queryKey: ['micros7'] });
   qc.invalidateQueries({ queryKey: ['adherence'] });
+  scheduleCloudSync();
 }
 
 export function useLogMutations() {
@@ -102,6 +107,7 @@ export function useWeightMutations() {
   const onSuccess = () => {
     qc.invalidateQueries({ queryKey: ['weights'] });
     qc.invalidateQueries({ queryKey: ['coaching'] });
+    scheduleCloudSync();
   };
   return {
     upsert: useMutation({
@@ -207,7 +213,10 @@ export function useAcceptCheckIn() {
       });
       await settingsRepo.updateSettings({ lastCheckinDate: today });
     },
-    onSuccess: () => qc.invalidateQueries(),
+    onSuccess: () => {
+      qc.invalidateQueries();
+      scheduleCloudSync();
+    },
   });
 }
 
@@ -268,6 +277,9 @@ export function useToggleFavorite() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: foodsRepo.toggleFavorite,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['foods'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['foods'] });
+      scheduleCloudSync();
+    },
   });
 }
