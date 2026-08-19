@@ -88,8 +88,8 @@ export default function WeightSheet() {
           disabled={upsert.isPending || !(parseFloat(valueStr) > 0)}
         />
         <Text className="px-1 text-[12.5px] leading-[18px] text-ink-mut">
-          Morning weigh-ins, after the bathroom and before eating, give the steadiest trend. Daily
-          fluctuation is water — OpenMacro smooths it out.
+          Weigh in first thing in the morning for the steadiest trend. Daily swings are mostly
+          water, and the trend line smooths them out.
         </Text>
       </View>
     </KeyboardAvoidingView>

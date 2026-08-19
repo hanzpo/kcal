@@ -42,9 +42,8 @@ export default function CheckIn() {
           <Text className="text-[24px] font-bold text-ink dark:text-ink-inv">Weekly check-in</Text>
         </View>
         <Text className="pb-5 text-[14px] leading-5 text-ink-sec dark:text-ink-dsec">
-          Based on the last week of logging and weigh-ins, your expenditure reads{' '}
-          {exp ? formatInt(exp.current) : '—'} kcal/day. Here's the adjustment that keeps you on
-          pace:
+          Over the last week your burn rate reads {exp ? formatInt(exp.current) : '—'} kcal per
+          day. This adjustment keeps you on pace:
         </Text>
 
         <Card className="items-center gap-1 p-6">
@@ -78,8 +77,8 @@ export default function CheckIn() {
         </Card>
 
         <Text className="px-1 pt-4 text-[12.5px] leading-[18px] text-ink-mut">
-          Adjustments drift toward the ideal rather than jumping — one rough week never causes a
-          punishing cut. Decline if this week wasn't representative (travel, illness).
+          Adjustments move halfway to the ideal each week, so one rough week never causes a
+          punishing cut. Skip it if this week wasn't normal for you, like travel or illness.
         </Text>
       </View>
       <View className="gap-2.5 px-5" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>

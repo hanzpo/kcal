@@ -94,7 +94,7 @@ export default function BarcodeScanner() {
               Not in the databases
             </Text>
             <Text className="text-[13px] leading-[18px] text-ink-mut">
-              Snap the nutrition-facts label instead — the AI reads it exactly.
+              Snap a photo of the nutrition label instead and the AI will read it.
             </Text>
             <View className="mt-1 flex-row gap-2">
               <View className="flex-1">

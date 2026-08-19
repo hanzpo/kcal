@@ -155,7 +155,7 @@ export default function Coach() {
           <Icon name="calendar" size={18} tint={p.inkMut} />
           <Text className="flex-1 text-[13.5px] text-ink-sec dark:text-ink-dsec">
             {exp?.calibrating
-              ? `Calibrating your expenditure — day ${exp.dataDays} of 14`
+              ? `Calibrating, day ${exp.dataDays} of 14`
               : daysToCheckIn === 0
                 ? 'Check-in unlocks with more data'
                 : `Next check-in in ${daysToCheckIn} day${daysToCheckIn === 1 ? '' : 's'}`}
@@ -215,7 +215,7 @@ export default function Coach() {
         <Text className="text-[13px] leading-[19px] text-ink-sec dark:text-ink-dsec">
           {exp?.calibrating
             ? 'Your true burn rate is being learned from intake vs. weight change. Early numbers lean on your profile estimate.'
-            : 'Learned continuously from what you eat vs. how your trend weight responds — this replaces formula guesses.'}
+            : 'Estimated from what you eat and how your trend weight responds, not from a formula.'}
         </Text>
         <View className="mt-1 flex-row gap-6">
           <View>

@@ -97,7 +97,7 @@ function CloudSyncCard() {
       setSyncResult(r.pulled + r.pushed > 0 ? `${r.pulled} down · ${r.pushed} up` : 'up to date');
       if (r.pulled > 0) qc.invalidateQueries();
     } catch {
-      setSyncResult('failed — check connection');
+      setSyncResult('failed, check your connection');
     } finally {
       setSyncBusy(false);
     }
@@ -166,7 +166,7 @@ function CloudSyncCard() {
       <View className="px-4 pb-2 pt-3.5">
         <Text className="text-[15px] font-medium text-ink dark:text-ink-inv">Account</Text>
         <Text className="pt-0.5 text-[12px] leading-4 text-ink-mut">
-          Optional — sign in to back up your data and sync it across phones.
+          Optional. Sign in to back up your data and sync it across phones.
         </Text>
       </View>
       <View className="gap-2 px-4 pb-3.5">
@@ -280,7 +280,7 @@ export default function Settings() {
   const wipe = () => {
     Alert.alert(
       'Erase everything?',
-      'All logs, weights, and foods will be permanently deleted from this phone. Cloud data is kept — sign back in later to restore it.',
+      'All logs, weights, and foods will be permanently deleted from this phone. Cloud data is kept. Sign back in later to restore it.',
       [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -495,7 +495,7 @@ export default function Settings() {
           <View className="px-4 pb-1 pt-3.5">
             <Text className="text-[15px] font-medium text-ink dark:text-ink-inv">USDA API key</Text>
             <Text className="pt-0.5 text-[12px] leading-4 text-ink-mut">
-              Optional — raises search limits. Free at fdc.nal.usda.gov/api-key-signup
+              Optional. Raises search limits. Free at fdc.nal.usda.gov/api-key-signup
             </Text>
           </View>
           <KeyField

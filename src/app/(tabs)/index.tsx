@@ -185,7 +185,7 @@ export default function Today() {
           <Press onPress={() => router.push('/add')} className="items-center gap-2 px-6 py-8">
             <Icon name="fork.knife" size={22} tint={p.inkFaint} />
             <Text className="text-center text-[14px] leading-5 text-ink-mut">
-              Nothing yet — tap + to log your first meal
+              Nothing yet. Tap + to log your first meal.
             </Text>
           </Press>
         ) : (

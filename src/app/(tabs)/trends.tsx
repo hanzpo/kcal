@@ -188,7 +188,7 @@ export default function Trends() {
           <EmptyChart
             message={
               coach?.expenditure?.calibrating
-                ? `Calibrating — day ${coach.expenditure.dataDays} of 14. Keep logging food and weigh-ins.`
+                ? `Calibrating, day ${coach.expenditure.dataDays} of 14. Keep logging and weighing in.`
                 : 'Your learned daily burn will chart here after two weeks of data.'
             }
           />

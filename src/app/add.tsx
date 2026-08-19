@@ -238,7 +238,7 @@ export default function AddFood() {
               <View className="items-center gap-2 px-8 pt-10">
                 <Icon name="magnifyingglass" size={24} tint={p.inkFaint} />
                 <Text className="text-center text-[14px] leading-5 text-ink-mut">
-                  Search the catalog, scan a barcode, or snap a photo — foods you log show up here
+                  Search the catalog, scan a barcode, or snap a photo. Foods you log show up here
                   for one-tap repeats.
                 </Text>
               </View>
@@ -289,7 +289,7 @@ export default function AddFood() {
                 {remote.data.generic.length + remote.data.branded.length === 0 && !remote.isFetching ? (
                   <View className="px-4 py-5">
                     <Text className="text-[13px] text-ink-mut">
-                      Nothing found — try the AI describe button instead.
+                      Nothing found. Try describing it instead.
                     </Text>
                   </View>
                 ) : null}

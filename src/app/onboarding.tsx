@@ -99,18 +99,28 @@ export default function Onboarding() {
   const [unit, setUnit] = useState<'lb' | 'kg'>('lb');
   const [sex, setSex] = useState<Sex | null>(null);
   const [birthYear, setBirthYear] = useState('');
-  const [height, setHeight] = useState(''); // cm or ft'in as decimal ft? keep cm/in by unit
+  const [height, setHeight] = useState(''); // metric: cm
+  const [heightFt, setHeightFt] = useState(''); // imperial: feet + inches as separate fields
+  const [heightIn, setHeightIn] = useState('');
   const [weight, setWeight] = useState('');
   const [activity, setActivity] = useState<Activity | null>(null);
   const [goal, setGoal] = useState<Goal | null>(null);
   const [ratePct, setRatePct] = useState<number | null>(null);
 
   const heightCm = useMemo(() => {
-    const v = parseFloat(height);
-    if (!isFinite(v) || v <= 0) return null;
-    const cm = unit === 'kg' ? v : v * 2.54; // metric: cm, imperial: inches
+    let cm: number;
+    if (unit === 'kg') {
+      const v = parseFloat(height);
+      if (!isFinite(v) || v <= 0) return null;
+      cm = v;
+    } else {
+      const ft = parseInt(heightFt, 10);
+      const inch = heightIn.trim() === '' ? 0 : parseFloat(heightIn);
+      if (!isFinite(ft) || ft <= 0 || !isFinite(inch) || inch < 0 || inch >= 12) return null;
+      cm = (ft * 12 + inch) * 2.54;
+    }
     return cm >= 90 && cm <= 250 ? cm : null;
-  }, [height, unit]);
+  }, [height, heightFt, heightIn, unit]);
 
   const weightKg = useMemo(() => {
     const v = parseFloat(weight);
@@ -177,8 +187,8 @@ export default function Onboarding() {
       <View className="gap-2">
         <Text className="font-monosemi text-[42px] leading-[46px] text-ink dark:text-ink-inv">OpenMacro</Text>
         <Text className="text-[16px] leading-6 text-ink-sec dark:text-ink-dsec">
-          Log what you eat, weigh in when you can. OpenMacro learns your real energy burn and adjusts
-          your targets every week — no guesswork.
+          Log your food and weigh in. OpenMacro learns your real burn rate from the data and keeps
+          your targets honest.
         </Text>
       </View>
       <View className="gap-2">
@@ -214,12 +224,18 @@ export default function Onboarding() {
       </View>
       <View className="gap-2">
         <SectionLabel>Height</SectionLabel>
-        <NumberField
-          value={height}
-          onChange={setHeight}
-          placeholder={unit === 'kg' ? '178' : '70'}
-          suffix={unit === 'kg' ? 'cm' : 'in'}
-        />
+        {unit === 'kg' ? (
+          <NumberField value={height} onChange={setHeight} placeholder="178" suffix="cm" />
+        ) : (
+          <View className="flex-row gap-2">
+            <View className="flex-1">
+              <NumberField value={heightFt} onChange={setHeightFt} placeholder="5" suffix="ft" />
+            </View>
+            <View className="flex-1">
+              <NumberField value={heightIn} onChange={setHeightIn} placeholder="10" suffix="in" />
+            </View>
+          </View>
+        )}
       </View>
       <View className="gap-2">
         <SectionLabel>Current weight</SectionLabel>
@@ -231,7 +247,7 @@ export default function Onboarding() {
     <View key="a" className="gap-4">
       <Text className="text-[24px] font-bold text-ink dark:text-ink-inv">Activity level</Text>
       <Text className="-mt-2 text-[14px] text-ink-mut">
-        Just a starting point — OpenMacro replaces this estimate with your real data within two weeks.
+        This only seeds the first estimate. Your real data takes over within two weeks.
       </Text>
       <View className="gap-2">
         {ACTIVITIES.map((a) => (
@@ -315,8 +331,8 @@ export default function Onboarding() {
             ))}
           </View>
           <Text className="pt-1 text-center text-[12.5px] leading-[18px] text-ink-mut">
-            Starting estimate: {Math.round(preview.tdee).toLocaleString()} kcal/day burn. Weigh in
-            and log consistently — your first data-driven adjustment lands in about a week.
+            Starting estimate: {Math.round(preview.tdee).toLocaleString()} kcal burned per day. Log
+            and weigh in most days and the first adjustment lands in about a week.
           </Text>
         </View>
       ) : null}

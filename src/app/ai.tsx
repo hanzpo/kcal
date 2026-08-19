@@ -227,7 +227,7 @@ export default function AiLogging() {
             <Card className="items-center gap-2 px-6 py-8">
               <Icon name="questionmark.circle" size={24} tint={p.inkFaint} />
               <Text className="text-center text-[14px] leading-5 text-ink-sec dark:text-ink-dsec">
-                {result.notes ?? "Couldn't find food in that — try again with a clearer photo or description."}
+                {result.notes ?? "Couldn't find food in that. Try a clearer photo or description."}
               </Text>
             </Card>
             <GhostButton
