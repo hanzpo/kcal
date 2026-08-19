@@ -46,6 +46,14 @@
         {
           "cameraPermission": "Tablet uses the camera to scan food barcodes and photograph meals for AI logging."
         }
+      ],
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "Tablet reads your weight from Health so smart-scale weigh-ins count toward your trend.",
+          "NSHealthUpdateUsageDescription": "Tablet writes manual weigh-ins to Health so all your apps share one record.",
+          "background": false
+        }
       ]
     ],
     "experiments": {

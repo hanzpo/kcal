@@ -7,7 +7,7 @@ import { CartesianChart, Bar, Line, Scatter } from 'victory-native';
 
 import { Card, Press, SectionLabel } from '@/components/ui';
 import { useCoaching, useIntakeHistory, useSettings, useTargetForDate } from '@/hooks/queries';
-import { addDaysStr, todayStr } from '@/lib/dates';
+import { addDaysStr, formatShortDate, todayStr } from '@/lib/dates';
 import { formatInt, kgToDisplay } from '@/lib/format';
 import { MICRO_META, parseMicros, type MicroKey } from '@/lib/nutrition';
 import { trendsRangeAtom } from '@/lib/prefs';
@@ -60,13 +60,17 @@ export default function Trends() {
   const cutoff = addDaysStr(todayStr(), -rangeDays);
 
   // Weight: dots (scale) + line (trend)
-  const weightData = (coach?.trend ?? [])
-    .filter((t) => t.date >= cutoff)
-    .map((t, i) => ({
-      i,
-      scale: t.scaleKg != null ? kgToDisplay(t.scaleKg, unit) : (null as number | null),
-      trend: kgToDisplay(t.trendKg, unit),
-    }));
+  const trendFiltered = (coach?.trend ?? []).filter((t) => t.date >= cutoff);
+  const weightDates = trendFiltered.map((t) => t.date);
+  const weightData = trendFiltered.map((t, i) => ({
+    i,
+    scale: t.scaleKg != null ? kgToDisplay(t.scaleKg, unit) : (null as number | null),
+    trend: kgToDisplay(t.trendKg, unit),
+  }));
+  const dateLabel = (dates: string[]) => (v: unknown) => {
+    const d = dates[Math.round(v as number)];
+    return d ? formatShortDate(d) : '';
+  };
 
   // Expenditure over time
   const expData = (coach?.expenditure?.history ?? [])
@@ -75,6 +79,7 @@ export default function Trends() {
 
   // Energy balance: intake bars vs expenditure line
   const expByDate = new Map((coach?.expenditure?.history ?? []).map((h) => [h.date, h.tdee]));
+  const balanceDates = (intakes ?? []).map((d) => d.date);
   const balanceData = (intakes ?? []).map((d, i) => ({
     i,
     intake: d.kcal,
@@ -141,7 +146,8 @@ export default function Trends() {
                 font,
                 labelColor: p.inkMut,
                 lineColor: p.line,
-                tickCount: { x: 0, y: 4 },
+                tickCount: { x: 3, y: 4 },
+                formatXLabel: dateLabel(weightDates),
                 formatYLabel: (v) => `${Math.round(v as number)}`,
               }}>
               {({ points }) => (
@@ -202,7 +208,8 @@ export default function Trends() {
                 font,
                 labelColor: p.inkMut,
                 lineColor: p.line,
-                tickCount: { x: 0, y: 4 },
+                tickCount: { x: 3, y: 4 },
+                formatXLabel: dateLabel(balanceDates),
                 formatYLabel: (v) => `${Math.round((v as number) / 100) / 10}k`,
               }}>
               {({ points, chartBounds }) => (

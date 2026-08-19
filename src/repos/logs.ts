@@ -80,6 +80,27 @@ export async function softDeleteEntry(id: string): Promise<void> {
   await db.update(logEntries).set({ deletedAt: now, updatedAt: now }).where(eq(logEntries.id, id));
 }
 
+/** Copy all of one meal's entries from one date to another (fresh snapshots). */
+export async function copyMeal(fromDate: string, toDate: string, meal: NewLogEntry['meal']): Promise<number> {
+  const source = await db.query.logEntries.findMany({
+    where: and(eq(logEntries.date, fromDate), eq(logEntries.meal, meal), alive),
+    orderBy: [asc(logEntries.createdAt)],
+  });
+  const now = Date.now();
+  for (const e of source) {
+    await db.insert(logEntries).values({
+      ...e,
+      id: newId(),
+      date: toDate,
+      loggedVia: 'recent',
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+    });
+  }
+  return source.length;
+}
+
 /** Distinct dates (desc) that have any entries — used for streak/adherence stats. */
 export async function getLoggedDates(sinceDate: string): Promise<string[]> {
   const rows = await db

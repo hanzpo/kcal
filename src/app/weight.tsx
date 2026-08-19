@@ -3,7 +3,11 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useAtomValue } from 'jotai';
+
 import { Press, PrimaryButton, SectionLabel } from '@/components/ui';
+import { healthSyncAtom } from '@/lib/prefs';
+import { exportWeightToHealth } from '@/services/health';
 import { useSettings, useWeightMutations, useWeights } from '@/hooks/queries';
 import { addDaysStr, formatDayTitle, todayStr } from '@/lib/dates';
 import { displayToKg, kgToDisplay } from '@/lib/format';
@@ -16,6 +20,7 @@ export default function WeightSheet() {
   const { data: settings } = useSettings();
   const { data: weights } = useWeights();
   const { upsert } = useWeightMutations();
+  const healthSyncEnabled = useAtomValue(healthSyncAtom);
 
   const unit = settings?.weightUnit ?? 'lb';
   const [date, setDate] = useState(todayStr());
@@ -31,7 +36,9 @@ export default function WeightSheet() {
   const save = async () => {
     const v = parseFloat(valueStr);
     if (!isFinite(v) || v <= 0) return;
-    await upsert.mutateAsync({ date, weightKg: displayToKg(v, unit) });
+    const weightKg = displayToKg(v, unit);
+    await upsert.mutateAsync({ date, weightKg });
+    if (healthSyncEnabled) exportWeightToHealth(date, weightKg); // fire-and-forget
     router.back();
   };
 

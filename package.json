@@ -6,6 +6,7 @@
     "@anthropic-ai/sdk": "^0.117.1",
     "@expo-google-fonts/ibm-plex-mono": "^0.4.1",
     "@expo/ui": "~57.0.11",
+    "@kingstinct/react-native-healthkit": "^14.0.2",
     "@react-navigation/bottom-tabs": "^7.18.16",
     "@shopify/flash-list": "2.0.2",
     "@shopify/react-native-skia": "2.6.2",

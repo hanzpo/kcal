@@ -1,7 +1,10 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useAtom } from 'jotai';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { copyMeal } from '@/repos/logs';
 
 import { Card, Icon, Press, SectionLabel } from '@/components/ui';
 import type { LogEntry } from '@/db/schema';
@@ -43,9 +46,21 @@ function EntryRow({ entry, onPress }: { entry: LogEntry; onPress: () => void }) 
 function MealSection({ meal, date }: { meal: Meal; date: string }) {
   const router = useRouter();
   const p = usePalette();
+  const qc = useQueryClient();
   const { data: day } = useDayLog(date);
+  const yesterday = addDaysStr(date, -1);
+  const { data: prevDay } = useDayLog(yesterday);
   const entries = day?.byMeal[meal] ?? [];
   const subtotal = day?.mealTotals[meal] ?? 0;
+  const prevEntries = prevDay?.byMeal[meal] ?? [];
+  const prevKcal = prevDay?.mealTotals[meal] ?? 0;
+
+  const copyYesterday = async () => {
+    await copyMeal(yesterday, date, meal);
+    qc.invalidateQueries({ queryKey: ['log'] });
+    qc.invalidateQueries({ queryKey: ['coaching'] });
+    qc.invalidateQueries({ queryKey: ['intakes'] });
+  };
 
   return (
     <Card className="mb-3 overflow-hidden">
@@ -65,11 +80,21 @@ function MealSection({ meal, date }: { meal: Meal; date: string }) {
         </View>
       </View>
       {entries.length === 0 ? (
-        <Press
-          onPress={() => router.push({ pathname: '/add', params: { meal, date } })}
-          className="px-4 py-3.5">
-          <Text className="text-[13px] text-ink-faint">Add food…</Text>
-        </Press>
+        <View className="flex-row items-center">
+          <Press
+            onPress={() => router.push({ pathname: '/add', params: { meal, date } })}
+            className="flex-1 px-4 py-3.5">
+            <Text className="text-[13px] text-ink-faint">Add food…</Text>
+          </Press>
+          {prevEntries.length > 0 ? (
+            <Press onPress={copyYesterday} className="flex-row items-center gap-1.5 px-4 py-3.5">
+              <Icon name="doc.on.doc" size={13} tint={p.inkMut} />
+              <Text className="text-[12.5px] font-medium text-ink-sec dark:text-ink-dsec">
+                Yesterday · {formatInt(prevKcal)}
+              </Text>
+            </Press>
+          ) : null}
+        </View>
       ) : (
         entries.map((e, i) => (
           <View key={e.id} className={i > 0 ? 'border-t border-line/60 dark:border-line-dark/60' : ''}>

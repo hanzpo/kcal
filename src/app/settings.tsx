@@ -1,7 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
 import * as SecureStore from 'expo-secure-store';
+import { useAtom } from 'jotai';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, Appearance, ScrollView, Text, TextInput, View } from 'react-native';
+
+import { healthSyncAtom, themeAtom } from '@/lib/prefs';
+import { healthAvailable, importWeightsFromHealth, requestWeightAccess } from '@/services/health';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Card, Divider, NavRow, Press, SectionLabel } from '@/components/ui';
@@ -68,6 +72,45 @@ export default function Settings() {
   const qc = useQueryClient();
   const { data: settings } = useSettings();
   const update = useUpdateSettings();
+  const [theme, setTheme] = useAtom(themeAtom);
+
+  const [healthSync, setHealthSync] = useAtom(healthSyncAtom);
+  const [healthBusy, setHealthBusy] = useState(false);
+  const [healthResult, setHealthResult] = useState<string | null>(null);
+
+  const syncHealthNow = async () => {
+    setHealthBusy(true);
+    setHealthResult(null);
+    try {
+      const changed = await importWeightsFromHealth(365);
+      setHealthResult(changed > 0 ? `${changed} weigh-ins` : 'up to date');
+      if (changed > 0) qc.invalidateQueries();
+    } catch (e: any) {
+      setHealthResult('failed');
+    } finally {
+      setHealthBusy(false);
+    }
+  };
+
+  const toggleHealth = async () => {
+    if (healthSync) {
+      setHealthSync(false);
+      return;
+    }
+    if (!healthAvailable()) {
+      Alert.alert('Not available', 'Apple Health is not available on this device.');
+      return;
+    }
+    const ok = await requestWeightAccess();
+    if (!ok) {
+      Alert.alert(
+        'Health access',
+        'Tablet needs Health permission to read weight. You can grant it in the Health app → Sharing.',
+      );
+    }
+    setHealthSync(true);
+    syncHealthNow();
+  };
 
   const [aiReady, setAiReady] = useState<boolean | null>(null);
   const [aiKeySaved, setAiKeySaved] = useState<string | null>(null);
@@ -106,6 +149,21 @@ export default function Settings() {
   const unit = settings?.weightUnit ?? 'lb';
   const protein = settings?.proteinGPerKg ?? 1.8;
 
+  // stored canonically as g/kg; imperial users see & step in g/lb
+  const KG_PER_LB = 0.45359237;
+  const displayProtein =
+    unit === 'lb' ? (protein * KG_PER_LB).toFixed(2) : protein.toFixed(1);
+  const stepProtein = (dir: 1 | -1) => {
+    if (unit === 'lb') {
+      const gPerLb = protein * KG_PER_LB + dir * 0.05;
+      const clamped = Math.min(1.4, Math.max(0.55, Math.round(gPerLb * 100) / 100));
+      update.mutate({ proteinGPerKg: clamped / KG_PER_LB });
+    } else {
+      const next = Math.min(3.0, Math.max(1.2, Math.round((protein + dir * 0.1) * 10) / 10));
+      update.mutate({ proteinGPerKg: next });
+    }
+  };
+
   return (
     <View className="flex-1 bg-page pt-3.5 dark:bg-page-dark">
       <View className="items-center pb-3">
@@ -119,6 +177,29 @@ export default function Settings() {
 
         <SectionLabel className="px-2 pb-1.5">Preferences</SectionLabel>
         <Card className="mb-4 overflow-hidden">
+          <View className="flex-row items-center justify-between px-4 py-3.5">
+            <Text className="text-[15px] font-medium text-ink dark:text-ink-inv">Appearance</Text>
+            <View className="flex-row overflow-hidden rounded-full bg-raise dark:bg-raise-dark">
+              {(['system', 'light', 'dark'] as const).map((t) => (
+                <Press
+                  key={t}
+                  haptic={false}
+                  onPress={() => {
+                    setTheme(t);
+                    Appearance.setColorScheme(t === 'system' ? 'unspecified' : t);
+                  }}
+                  className={`px-3.5 py-1.5 ${theme === t ? 'rounded-full bg-ink dark:bg-ink-inv' : ''}`}>
+                  <Text
+                    className={`text-[13px] font-semibold capitalize ${
+                      theme === t ? 'text-ink-inv dark:text-ink' : 'text-ink-sec dark:text-ink-dsec'
+                    }`}>
+                    {t === 'system' ? 'Auto' : t}
+                  </Text>
+                </Press>
+              ))}
+            </View>
+          </View>
+          <Divider />
           <View className="flex-row items-center justify-between px-4 py-3.5">
             <Text className="text-[15px] font-medium text-ink dark:text-ink-inv">Weight unit</Text>
             <View className="flex-row overflow-hidden rounded-full bg-raise dark:bg-raise-dark">
@@ -142,19 +223,21 @@ export default function Settings() {
           <View className="flex-row items-center justify-between px-4 py-3.5">
             <View>
               <Text className="text-[15px] font-medium text-ink dark:text-ink-inv">Protein target</Text>
-              <Text className="text-[12px] text-ink-mut">grams per kg bodyweight</Text>
+              <Text className="text-[12px] text-ink-mut">
+                grams per {unit === 'lb' ? 'lb' : 'kg'} bodyweight
+              </Text>
             </View>
             <View className="flex-row items-center gap-3">
               <Press
-                onPress={() => update.mutate({ proteinGPerKg: Math.max(1.2, Math.round((protein - 0.2) * 10) / 10) })}
+                onPress={() => stepProtein(-1)}
                 className="h-8 w-8 items-center justify-center rounded-full bg-raise dark:bg-raise-dark">
                 <Text className="text-[16px] text-ink dark:text-ink-inv">−</Text>
               </Press>
-              <Text className="w-8 text-center font-mono text-[15px] text-ink dark:text-ink-inv">
-                {protein.toFixed(1)}
+              <Text className="w-10 text-center font-mono text-[15px] text-ink dark:text-ink-inv">
+                {displayProtein}
               </Text>
               <Press
-                onPress={() => update.mutate({ proteinGPerKg: Math.min(3.0, Math.round((protein + 0.2) * 10) / 10) })}
+                onPress={() => stepProtein(1)}
                 className="h-8 w-8 items-center justify-center rounded-full bg-raise dark:bg-raise-dark">
                 <Text className="text-[16px] text-ink dark:text-ink-inv">+</Text>
               </Press>
@@ -215,6 +298,37 @@ export default function Settings() {
               })}
             </View>
           </View>
+        </Card>
+
+        <SectionLabel className="px-2 pb-1.5">Integrations</SectionLabel>
+        <Card className="mb-4 overflow-hidden">
+          <View className="flex-row items-center justify-between px-4 py-3.5">
+            <View className="flex-1 pr-3">
+              <Text className="text-[15px] font-medium text-ink dark:text-ink-inv">Apple Health</Text>
+              <Text className="pt-0.5 text-[12px] leading-4 text-ink-mut">
+                Smart-scale weigh-ins (Renpho, Withings…) flow in via Health; Tablet writes manual
+                entries back.
+              </Text>
+            </View>
+            <Press
+              onPress={toggleHealth}
+              className={`h-[30px] w-[52px] justify-center rounded-full px-[3px] ${
+                healthSync ? 'items-end bg-good dark:bg-good-dark' : 'items-start bg-raise dark:bg-raise-dark'
+              }`}>
+              <View className="h-6 w-6 rounded-full bg-white shadow-sm" />
+            </Press>
+          </View>
+          {healthSync ? (
+            <>
+              <Divider />
+              <NavRow
+                icon="arrow.triangle.2.circlepath"
+                title={healthBusy ? 'Syncing…' : 'Sync now'}
+                detail={healthResult ?? undefined}
+                onPress={healthBusy ? undefined : syncHealthNow}
+              />
+            </>
+          ) : null}
         </Card>
 
         <SectionLabel className="px-2 pb-1.5">Food database</SectionLabel>

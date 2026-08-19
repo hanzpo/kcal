@@ -12,7 +12,10 @@ import * as SecureStore from 'expo-secure-store';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { LogBox, Text, View } from 'react-native';
+import { Appearance, LogBox, Text, View } from 'react-native';
+
+import { readHealthSyncPref, readThemePref } from '@/lib/prefs';
+import { importWeightsFromHealth } from '@/services/health';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { db } from '@/db/client';
@@ -23,6 +26,10 @@ import { setFdcApiKey } from '@/services/foodApi';
 SplashScreen.preventAutoHideAsync();
 // warnings stay visible in the Metro terminal; in-app toasts just get in the way
 LogBox.ignoreAllLogs();
+
+// apply any saved appearance override before first render
+const savedTheme = readThemePref();
+Appearance.setColorScheme(savedTheme === 'system' ? 'unspecified' : savedTheme);
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5_000, retry: 1 } },
@@ -41,6 +48,18 @@ export default function RootLayout() {
         await seedFoodsIfNeeded();
       } finally {
         setSeeded(true);
+      }
+      // silent Apple Health weight sync (Renpho etc.) when enabled
+      if (readHealthSyncPref()) {
+        try {
+          const changed = await importWeightsFromHealth(90);
+          if (changed > 0) {
+            queryClient.invalidateQueries({ queryKey: ['weights'] });
+            queryClient.invalidateQueries({ queryKey: ['coaching'] });
+          }
+        } catch {
+          // best-effort background sync
+        }
       }
     })();
   }, [migrated]);
