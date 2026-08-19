@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useAtom } from 'jotai';
 import { useEffect, useState } from 'react';
@@ -11,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card, Divider, NavRow, Press, SectionLabel } from '@/components/ui';
 import { db } from '@/db/client';
 import { foods, logEntries, settings as settingsTable, targets, weights } from '@/db/schema';
+import { seedFoodsIfNeeded } from '@/db/seed';
 import { useSettings, useUpdateSettings } from '@/hooks/queries';
 import { usePalette } from '@/lib/theme';
 import {
@@ -69,6 +71,7 @@ function KeyField({
 
 export default function Settings() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const qc = useQueryClient();
   const { data: settings } = useSettings();
   const update = useUpdateSettings();
@@ -140,7 +143,9 @@ export default function Settings() {
           await db.delete(targets);
           await db.delete(foods);
           await db.delete(settingsTable);
-          qc.invalidateQueries();
+          await seedFoodsIfNeeded();
+          await qc.invalidateQueries();
+          router.dismissAll(); // gate sends the fresh profile back through onboarding
         },
       },
     ]);

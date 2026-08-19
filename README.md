@@ -26,6 +26,13 @@ AI logging, with no accounts, no subscription, and all data in SQLite on the pho
   portion re-scaling, micronutrient detail per food and 7-day averages.
 - **Charts** — weight (scale dots + trend line), expenditure history, energy balance,
   micro averages. Dark and light themes throughout.
+- **Apple Health sync** — two-way weight bridge. Smart-scale apps (Renpho, Withings, Eufy…)
+  write to Health; Tablet imports on launch/foreground and after "Sync now", and writes manual
+  weigh-ins back so Health stays the single record. Enable in Settings → Integrations.
+  (For Renpho: turn on Apple Health sync inside the Renpho app once.)
+- **Appearance** — follows iOS automatically, with a manual Auto/Light/Dark override in Settings.
+- **Copy yesterday** — empty meal sections in the diary offer yesterday's meal in one tap;
+  suggestion rows re-log a food's default serving in one tap.
 - **Backup** — one-tap JSON export/import (the phone-migration path).
 
 ## Running it

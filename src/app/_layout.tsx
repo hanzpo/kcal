@@ -18,6 +18,7 @@ import { readHealthSyncPref, readThemePref } from '@/lib/prefs';
 import { importWeightsFromHealth } from '@/services/health';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { db } from '@/db/client';
 import migrations from '@/db/migrations/migrations';
 import { seedFoodsIfNeeded } from '@/db/seed';
@@ -94,6 +95,7 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <StatusBar style="auto" />
         <Stack
@@ -114,6 +116,7 @@ export default function RootLayout() {
           <Stack.Screen name="checkin" options={{ presentation: 'modal' }} />
         </Stack>
       </QueryClientProvider>
+      </ErrorBoundary>
     </GestureHandlerRootView>
   );
 }
