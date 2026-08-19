@@ -222,7 +222,26 @@ export default function AiLogging() {
           </Card>
         ) : null}
 
-        {(phase === 'results' || phase === 'fixing') && result ? (
+        {(phase === 'results' || phase === 'fixing') && result && result.items.length === 0 ? (
+          <View className="gap-3">
+            <Card className="items-center gap-2 px-6 py-8">
+              <Icon name="questionmark.circle" size={24} tint={p.inkFaint} />
+              <Text className="text-center text-[14px] leading-5 text-ink-sec dark:text-ink-dsec">
+                {result.notes ?? "Couldn't find food in that — try again with a clearer photo or description."}
+              </Text>
+            </Card>
+            <GhostButton
+              label="Try again"
+              onPress={() => {
+                setResult(null);
+                setImageUri(null);
+                setPhase('input');
+              }}
+            />
+          </View>
+        ) : null}
+
+        {(phase === 'results' || phase === 'fixing') && result && result.items.length > 0 ? (
           <View className="gap-3">
             {/* Totals header */}
             <Card className="flex-row items-center justify-between p-4">
@@ -250,12 +269,7 @@ export default function AiLogging() {
 
             {/* Items */}
             <Card className="overflow-hidden">
-              {result.items.length === 0 ? (
-                <View className="px-4 py-6">
-                  <Text className="text-[14px] text-ink-mut">No food detected.</Text>
-                </View>
-              ) : (
-                result.items.map((item, i) => (
+              {result.items.map((item, i) => (
                   <View
                     key={i}
                     className={`px-4 py-3 ${i > 0 ? 'border-t border-line/60 dark:border-line-dark/60' : ''}`}>
@@ -295,8 +309,7 @@ export default function AiLogging() {
                       </Press>
                     </View>
                   </View>
-                ))
-              )}
+                ))}
             </Card>
 
             {/* Fix box */}

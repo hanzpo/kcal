@@ -9,8 +9,10 @@ import type { Food } from '@/db/schema';
 import {
   useLocalFoodSearch,
   useLocalFoodSuggestions,
+  useLogMutations,
   useRemoteFoodSearch,
 } from '@/hooks/queries';
+import { parseServings } from '@/lib/nutrition';
 import { MEAL_LABELS, MEALS, mealForNow, todayStr, type Meal } from '@/lib/dates';
 import { formatInt } from '@/lib/format';
 import { usePalette } from '@/lib/theme';
@@ -51,6 +53,7 @@ function FoodRow({
   detail,
   kcal,
   onPress,
+  onQuickLog,
   favorite,
 }: {
   name: string;
@@ -58,8 +61,11 @@ function FoodRow({
   detail: string;
   kcal: number;
   onPress: () => void;
+  /** One-tap: log the default serving immediately. */
+  onQuickLog?: () => void;
   favorite?: boolean;
 }) {
+  const p = usePalette();
   return (
     <Press onPress={onPress} className="flex-row items-center px-4 py-3">
       <View className="flex-1 pr-3">
@@ -76,6 +82,13 @@ function FoodRow({
         <Text className="font-mono text-[14px] text-ink-sec dark:text-ink-dsec">{formatInt(kcal)}</Text>
         <Text className="text-[10px] text-ink-faint">kcal</Text>
       </View>
+      {onQuickLog ? (
+        <Press
+          onPress={onQuickLog}
+          className="ml-3 h-9 w-9 items-center justify-center rounded-full bg-raise dark:bg-raise-dark">
+          <Icon name="plus" size={14} tint={p.ink} weight="bold" />
+        </Press>
+      ) : null}
     </Press>
   );
 }
@@ -100,6 +113,22 @@ export default function AddFood() {
 
   const openFood = (food: Food) =>
     router.push({ pathname: '/food/[id]', params: { id: food.id, meal, date } });
+
+  const { logFood } = useLogMutations();
+  const quickLog = async (food: Food) => {
+    const servings = parseServings(food);
+    const grams = servings[0]?.grams ?? 100;
+    await logFood.mutateAsync({
+      food,
+      grams,
+      quantity: servings[0] ? 1 : 100,
+      unit: servings[0]?.name ?? 'g',
+      meal,
+      date,
+      via: 'recent',
+    });
+    router.back();
+  };
 
   const openRemote = async (input: FoodInput) => {
     const food = await upsertCachedFood(input);
@@ -199,6 +228,7 @@ export default function AddFood() {
                         kcal={kcalForDefaultServing(f)}
                         favorite={f.isFavorite === 1}
                         onPress={() => openFood(f)}
+                        onQuickLog={() => quickLog(f)}
                       />
                     </View>
                   ))}

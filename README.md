@@ -1,56 +1,67 @@
-# Welcome to your Expo app 👋
+# Tablet
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A personal, local-first macro tracker — MacroFactor's adaptive coaching engine plus Cal AI's
+AI logging, with no accounts, no subscription, and all data in SQLite on the phone.
 
-## Get started
+<p>
+  <img src="assets/images/icon.png" width="80" alt="icon" />
+</p>
 
-1. Install dependencies
+## What it does
 
-   ```bash
-   npm install
-   ```
+- **Adaptive expenditure (TDEE)** — learned continuously from logged intake vs. the smoothed
+  weight trend (Hacker's-Diet EMA + 14-day energy-balance window, MacroFactor-style holding /
+  imputation / clamping). Formula estimates only seed the first two weeks.
+- **Weekly check-in** — proposes new calorie/macro targets from your real data; accept or
+  decline. Each week is self-contained; no punishment deficits.
+- **Five ways to log**
+  - Search: bundled offline catalog of ~85 common foods + USDA FoodData Central + Open Food
+    Facts, pre-populated with time-of-day-aware recents/frequents/favorites
+  - Barcode scan (EAN/UPC → Open Food Facts, USDA Branded fallback, manual entry field)
+  - **AI photo** — plate, packaging, or nutrition-facts label → itemized editable estimate
+  - **AI describe** — type the meal, get an itemized estimate, correct it with free text
+    ("that was brown rice, about 2 cups") and re-estimate
+  - Quick add (kcal + optional macros)
+- **Diary** with meal sections, snapshot nutrition (editing a food never rewrites history),
+  portion re-scaling, micronutrient detail per food and 7-day averages.
+- **Charts** — weight (scale dots + trend line), expenditure history, energy balance,
+  micro averages. Dark and light themes throughout.
+- **Backup** — one-tap JSON export/import (the phone-migration path).
 
-2. Start the app
+## Running it
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```sh
+npm install
+npx expo run:ios          # dev build on the iOS simulator (or a plugged-in iPhone)
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+- **AI logging key**: `ANTHROPIC_API_KEY` in the environment when Metro starts is baked in for
+  dev; on a real device set it in **Settings → AI** (stored in the keychain). Model is
+  switchable Opus/Sonnet/Haiku in Settings (Opus default; Haiku is fastest).
+- **USDA key** (optional): DEMO_KEY works out of the box but is rate-limited (~30 req/hr).
+  Free instant signup at https://fdc.nal.usda.gov/api-key-signup — paste in Settings.
+- **On your iPhone**: plug it in and `npx expo run:ios --device`, or set up EAS
+  (`eas build --profile development --platform ios`) for cable-free installs. With a free
+  Apple ID the signature lasts 7 days; a paid developer account lasts a year.
 
-### Other setup steps
+## Architecture (Supabase-ready)
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+- `src/db/schema.ts` — Drizzle + expo-sqlite. Sync-ready by construction: client-generated
+  UUID keys, `created_at`/`updated_at` epoch-ms, soft deletes (`deleted_at` tombstones), no
+  `user_id` locally (Postgres would stamp `auth.uid()` server-side under RLS).
+- `src/repos/*` — the only code that touches the DB. Swapping in `supabase-js` (or adding a
+  sync engine underneath) touches nothing above this layer.
+- `src/hooks/queries.ts` — TanStack Query over repos; screens never import the DB.
+- `src/services/coaching.ts` — the pure-function TDEE/targets engine (constants documented
+  inline; validated against the published MacroFactor/Pensum behavior).
+- `src/services/foodApi.ts` — OFF + FDC normalized to per-100g; `ai.ts` — Claude structured
+  outputs; `logging.ts` — snapshot writes; `backup.ts` — export/import.
+- UI: Expo Router + NativeWind, SF Symbols, IBM Plex Mono numerals, Skia charts
+  (victory-native). Design tokens in `tailwind.config.js` / `src/lib/theme.ts`.
 
-## Learn more
+`scripts/debug-coaching.ts` runs the coaching engine against the simulator's live DB
+(`npx tsx scripts/debug-coaching.ts`) — useful when tuning the algorithm.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Docs
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- `docs/SPEC.md` — full product spec (screens, algorithm constants, API strategy).
