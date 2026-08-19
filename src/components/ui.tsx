@@ -137,8 +137,8 @@ export function AddButton({ onPress }: { onPress: () => void }) {
       onPress={onPress}
       className="absolute right-5 h-[56px] w-[56px] items-center justify-center rounded-[16px] bg-ink dark:bg-ink-inv"
       style={{
-        // clear the floating liquid-glass tab bar
-        bottom: insets.bottom + 66,
+        // the native tab bar already contributes to the bottom safe-area inset
+        bottom: insets.bottom + 12,
         shadowColor: '#000',
         shadowOpacity: 0.18,
         shadowRadius: 10,
