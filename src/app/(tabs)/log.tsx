@@ -1,20 +1,31 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { format, parseISO } from 'date-fns';
 import { useRouter } from 'expo-router';
 import { useAtom } from 'jotai';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { copyMeal } from '@/repos/logs';
+import { copyMeal, getLoggedDates } from '@/repos/logs';
+
+import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 
 import { Card, Icon, Press, SectionLabel } from '@/components/ui';
 import type { LogEntry } from '@/db/schema';
-import { useDayLog, useTargetForDate } from '@/hooks/queries';
+import { useDayLog, useLogMutations, useTargetForDate } from '@/hooks/queries';
 import { addDaysStr, formatDayTitle, MEAL_LABELS, MEALS, todayStr, type Meal } from '@/lib/dates';
 import { formatGrams, formatInt } from '@/lib/format';
 import { logDateAtom } from '@/lib/prefs';
 import { usePalette } from '@/lib/theme';
 
-function EntryRow({ entry, onPress }: { entry: LogEntry; onPress: () => void }) {
+function EntryRow({
+  entry,
+  onPress,
+  onDelete,
+}: {
+  entry: LogEntry;
+  onPress: () => void;
+  onDelete: () => void;
+}) {
   const via =
     entry.loggedVia === 'ai_photo' || entry.loggedVia === 'ai_text'
       ? '✦'
@@ -22,24 +33,36 @@ function EntryRow({ entry, onPress }: { entry: LogEntry; onPress: () => void }) 
         ? '⌷'
         : null;
   return (
-    <Press onPress={onPress} className="flex-row items-center px-4 py-[11px]">
-      <View className="flex-1 pr-3">
-        <Text numberOfLines={1} className="text-[15px] font-medium text-ink dark:text-ink-inv">
-          {entry.name}
-          {via ? <Text className="text-ink-faint"> {via}</Text> : null}
-        </Text>
-        <Text className="mt-[1px] text-[12px] text-ink-mut">
-          {entry.unit === 'g'
-            ? `${formatGrams(entry.grams ?? entry.quantity)} g`
-            : `${entry.quantity % 1 === 0 ? entry.quantity : entry.quantity.toFixed(2)} × ${entry.unit}`}
-          {'   ·   '}
-          <Text className="text-protein">{formatGrams(entry.proteinG)}p</Text>{' '}
-          <Text className="text-carbs">{formatGrams(entry.carbsG)}c</Text>{' '}
-          <Text className="text-fat">{formatGrams(entry.fatG)}f</Text>
-        </Text>
-      </View>
-      <Text className="font-mono text-[14px] text-ink-sec dark:text-ink-dsec">{formatInt(entry.kcal)}</Text>
-    </Press>
+    <Swipeable
+      friction={2}
+      rightThreshold={40}
+      overshootRight={false}
+      renderRightActions={() => (
+        <Press onPress={onDelete} className="w-[72px] items-center justify-center bg-[#C24040]">
+          <Icon name="trash" size={17} tint="#FFFFFF" />
+        </Press>
+      )}>
+      <Press
+        onPress={onPress}
+        className="flex-row items-center bg-card px-4 py-[11px] dark:bg-card-dark">
+        <View className="flex-1 pr-3">
+          <Text numberOfLines={1} className="text-[15px] font-medium text-ink dark:text-ink-inv">
+            {entry.name}
+            {via ? <Text className="text-ink-faint"> {via}</Text> : null}
+          </Text>
+          <Text className="mt-[1px] text-[12px] text-ink-mut">
+            {entry.unit === 'g'
+              ? `${formatGrams(entry.grams ?? entry.quantity)} g`
+              : `${entry.quantity % 1 === 0 ? entry.quantity : entry.quantity.toFixed(2)} × ${entry.unit}`}
+            {'   ·   '}
+            <Text className="text-protein">{formatGrams(entry.proteinG)}p</Text>{' '}
+            <Text className="text-carbs">{formatGrams(entry.carbsG)}c</Text>{' '}
+            <Text className="text-fat">{formatGrams(entry.fatG)}f</Text>
+          </Text>
+        </View>
+        <Text className="font-mono text-[14px] text-ink-sec dark:text-ink-dsec">{formatInt(entry.kcal)}</Text>
+      </Press>
+    </Swipeable>
   );
 }
 
@@ -47,6 +70,7 @@ function MealSection({ meal, date }: { meal: Meal; date: string }) {
   const router = useRouter();
   const p = usePalette();
   const qc = useQueryClient();
+  const { deleteEntry } = useLogMutations();
   const { data: day } = useDayLog(date);
   const yesterday = addDaysStr(date, -1);
   const { data: prevDay } = useDayLog(yesterday);
@@ -98,11 +122,66 @@ function MealSection({ meal, date }: { meal: Meal; date: string }) {
       ) : (
         entries.map((e, i) => (
           <View key={e.id} className={i > 0 ? 'border-t border-line/60 dark:border-line-dark/60' : ''}>
-            <EntryRow entry={e} onPress={() => router.push(`/entry/${e.id}`)} />
+            <EntryRow
+              entry={e}
+              onPress={() => router.push(`/entry/${e.id}`)}
+              onDelete={() => deleteEntry.mutate(e.id)}
+            />
           </View>
         ))
       )}
     </Card>
+  );
+}
+
+function WeekStrip({ date, onSelect }: { date: string; onSelect: (d: string) => void }) {
+  const today = todayStr();
+  const { data: loggedDates } = useQuery({
+    queryKey: ['loggedDates'],
+    queryFn: () => getLoggedDates(addDaysStr(todayStr(), -13)),
+  });
+  const logged = new Set(loggedDates ?? []);
+  const days = Array.from({ length: 7 }, (_, i) => addDaysStr(today, i - 6));
+
+  return (
+    <View className="flex-row justify-between px-4 pb-3">
+      {days.map((d) => {
+        const selected = d === date;
+        const dayNum = d.slice(-2).replace(/^0/, '');
+        const letter = format(parseISO(d), 'EEEEE');
+        return (
+          <Press
+            key={d}
+            onPress={() => onSelect(d)}
+            className={`h-[52px] w-[40px] items-center justify-center gap-0.5 rounded-2xl ${
+              selected ? 'bg-ink dark:bg-ink-inv' : ''
+            }`}>
+            <Text
+              className={`text-[10px] font-semibold uppercase ${
+                selected ? 'text-ink-inv/70 dark:text-ink/70' : 'text-ink-faint'
+              }`}>
+              {letter}
+            </Text>
+            <Text
+              className={`font-mono text-[14px] ${
+                selected ? 'text-ink-inv dark:text-ink' : 'text-ink dark:text-ink-inv'
+              }`}>
+              {dayNum}
+            </Text>
+            <View
+              className="h-[4px] w-[4px] rounded-full"
+              style={{
+                backgroundColor: logged.has(d)
+                  ? selected
+                    ? '#EDA100'
+                    : '#DE9300'
+                  : 'transparent',
+              }}
+            />
+          </Press>
+        );
+      })}
+    </View>
   );
 }
 
@@ -142,6 +221,8 @@ export default function Log() {
           <Icon name="chevron.right" size={15} tint={p.inkSec} />
         </Press>
       </View>
+
+      <WeekStrip date={date} onSelect={(d) => setDate(d === todayStr() ? null : d)} />
 
       {/* Day summary strip */}
       <View className="mx-4 mb-3 flex-row items-center justify-between rounded-2xl border border-line bg-card px-4 py-3 dark:border-line-dark dark:bg-card-dark">

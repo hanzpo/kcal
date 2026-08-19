@@ -69,6 +69,9 @@ function invalidateData(qc: ReturnType<typeof useQueryClient>) {
   qc.invalidateQueries({ queryKey: ['coaching'] });
   qc.invalidateQueries({ queryKey: ['foods'] });
   qc.invalidateQueries({ queryKey: ['intakes'] });
+  qc.invalidateQueries({ queryKey: ['loggedDates'] });
+  qc.invalidateQueries({ queryKey: ['micros7'] });
+  qc.invalidateQueries({ queryKey: ['adherence'] });
 }
 
 export function useLogMutations() {

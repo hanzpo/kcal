@@ -1,18 +1,19 @@
 import { useRouter } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { format, parseISO } from 'date-fns';
+import { useMemo, useState } from 'react';
+import { ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Card, Icon, Press, PrimaryButton, SectionLabel } from '@/components/ui';
 import { useCoaching, useSettings } from '@/hooks/queries';
 import { daysBetween, todayStr } from '@/lib/dates';
-import { formatInt, formatSigned, kgToDisplay } from '@/lib/format';
+import { displayToKg, formatInt, formatSigned, formatWeight, kgToDisplay } from '@/lib/format';
 import { usePalette } from '@/lib/theme';
 import { getLoggedDates } from '@/repos/logs';
 import { updateSettings } from '@/repos/settings';
 import { getActiveTarget, getTargetHistory, insertTarget } from '@/repos/targets';
-import { deriveTargets, mifflinStJeorBmr } from '@/services/coaching';
+import { deriveTargets, mifflinStJeorBmr, projectGoalDate } from '@/services/coaching';
 import { addDaysStr } from '@/lib/dates';
 
 type Goal = 'lose' | 'maintain' | 'gain';
@@ -53,13 +54,37 @@ export default function Coach() {
   const [editingGoal, setEditingGoal] = useState(false);
   const [goal, setGoal] = useState<Goal>((settings?.goalType as Goal) ?? 'maintain');
   const [ratePct, setRatePct] = useState<number>(settings?.goalRatePctPerWeek ?? 0);
+  const [goalWeightStr, setGoalWeightStr] = useState('');
+  const [goalPrefilled, setGoalPrefilled] = useState(false);
 
   const unit = settings?.weightUnit ?? 'lb';
   const exp = coach?.expenditure;
 
+  if (settings && !goalPrefilled) {
+    setGoalPrefilled(true);
+    if (settings.goalWeightKg != null) {
+      setGoalWeightStr(kgToDisplay(settings.goalWeightKg, settings.weightUnit ?? 'lb').toFixed(1));
+    }
+  }
+
+  const projection = useMemo(() => {
+    const from = coach?.trendKg ?? coach?.scaleKg;
+    if (!settings?.goalWeightKg || !settings.goalRatePctPerWeek || from == null) return null;
+    const date = projectGoalDate(from, settings.goalWeightKg, settings.goalRatePctPerWeek, todayStr());
+    if (!date) return null;
+    return {
+      target: formatWeight(settings.goalWeightKg, unit, 1),
+      when: format(parseISO(date), 'MMM d'),
+      toGo: kgToDisplay(Math.abs(settings.goalWeightKg - from), unit),
+    };
+  }, [settings, coach?.trendKg, coach?.scaleKg, unit]);
+
   const applyGoal = async () => {
     const weightKg = coach?.trendKg ?? coach?.scaleKg;
     if (!settings || !weightKg) return;
+    const gw = parseFloat(goalWeightStr);
+    const goalWeightKg =
+      isFinite(gw) && gw > 0 ? displayToKg(gw, settings.weightUnit ?? 'lb') : null;
     const bmr = mifflinStJeorBmr({
       sex: settings.sex ?? 'male',
       age: new Date().getFullYear() - (settings.birthYear ?? 1995),
@@ -73,7 +98,12 @@ export default function Coach() {
       proteinGPerKg: settings.proteinGPerKg,
       bmr,
     });
-    await updateSettings({ goalType: goal, goalRatePctPerWeek: ratePct, lastCheckinDate: todayStr() });
+    await updateSettings({
+      goalType: goal,
+      goalRatePctPerWeek: ratePct,
+      goalWeightKg,
+      lastCheckinDate: todayStr(),
+    });
     await insertTarget({
       effectiveDate: todayStr(),
       kcal: t.kcal,
@@ -96,6 +126,9 @@ export default function Coach() {
     <ScrollView
       className="flex-1 bg-page dark:bg-page-dark"
       contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: 110, paddingHorizontal: 16 }}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      automaticallyAdjustKeyboardInsets
       showsVerticalScrollIndicator={false}>
       <Text className="mb-4 px-1 text-[28px] font-bold tracking-tight text-ink dark:text-ink-inv">
         Coach
@@ -204,14 +237,24 @@ export default function Coach() {
       <SectionLabel className="px-2 pb-1.5">Goal</SectionLabel>
       <Card className="p-4">
         {!editingGoal ? (
-          <Press onPress={() => setEditingGoal(true)} className="flex-row items-center justify-between">
-            <Text className="text-[15px] font-medium text-ink dark:text-ink-inv">
-              {goalLabel}
-              {settings?.goalRatePctPerWeek
-                ? ` · ${formatSigned(settings.goalRatePctPerWeek, 2)}% BW / week`
-                : ''}
-            </Text>
-            <Text className="text-[13px] font-semibold text-ink-sec dark:text-ink-dsec">Change</Text>
+          <Press onPress={() => setEditingGoal(true)} className="gap-1">
+            <View className="flex-row items-center justify-between">
+              <Text className="text-[15px] font-medium text-ink dark:text-ink-inv">
+                {goalLabel}
+                {settings?.goalRatePctPerWeek
+                  ? ` · ${formatSigned(settings.goalRatePctPerWeek, 2)}% BW / week`
+                  : ''}
+              </Text>
+              <Text className="text-[13px] font-semibold text-ink-sec dark:text-ink-dsec">Change</Text>
+            </View>
+            {projection ? (
+              <Text className="text-[12.5px] text-ink-mut">
+                On pace for {projection.target} around{' '}
+                <Text className="font-semibold text-ink-sec dark:text-ink-dsec">{projection.when}</Text>
+                {' · '}
+                {projection.toGo.toFixed(1)} {unit} to go
+              </Text>
+            ) : null}
           </Press>
         ) : (
           <View className="gap-3">
@@ -235,6 +278,22 @@ export default function Coach() {
                 </Press>
               ))}
             </View>
+            {goal !== 'maintain' ? (
+              <View className="flex-row items-center gap-2">
+                <View className="w-[120px] flex-row items-center rounded-xl border border-line bg-page px-3 dark:border-line-dark dark:bg-page-dark">
+                  <TextInput
+                    value={goalWeightStr}
+                    onChangeText={setGoalWeightStr}
+                    placeholder={goal === 'lose' ? '165' : '190'}
+                    placeholderTextColor="#8B8981"
+                    keyboardType="decimal-pad"
+                    className="h-[40px] flex-1 font-mono text-[15px] text-ink dark:text-ink-inv"
+                  />
+                  <Text className="text-[12px] font-semibold text-ink-mut">{unit}</Text>
+                </View>
+                <Text className="text-[12px] text-ink-mut">goal weight (optional)</Text>
+              </View>
+            ) : null}
             {goal !== 'maintain' ? (
               <View className="flex-row flex-wrap gap-1.5">
                 {GOAL_RATES[goal].map((r) => (

@@ -73,7 +73,7 @@ export default function EditEntry() {
 
         <SectionLabel className="px-1 pb-2 pt-5">Adjust portion ×</SectionLabel>
         <View className="flex-row items-center gap-2">
-          <View className="w-[110px] rounded-2xl border border-line bg-card px-4 dark:border-line-dark dark:bg-card-dark">
+          <View className="w-[96px] rounded-2xl border border-line bg-card px-4 dark:border-line-dark dark:bg-card-dark">
             <TextInput
               value={scaleStr}
               onChangeText={setScaleStr}
@@ -82,11 +82,16 @@ export default function EditEntry() {
               className="h-[48px] font-mono text-[18px] text-ink dark:text-ink-inv"
             />
           </View>
-          {[0.5, 0.75, 1.25, 1.5, 2].map((m) => (
-            <Press key={m} onPress={() => setScaleStr(String(m))} className="rounded-full border border-line px-3 py-1.5 dark:border-line-dark">
-              <Text className="text-[13px] font-medium text-ink-sec dark:text-ink-dsec">{m}×</Text>
-            </Press>
-          ))}
+          <View className="flex-1 flex-row flex-wrap gap-1.5">
+            {[0.5, 0.75, 1.25, 1.5, 2].map((m) => (
+              <Press
+                key={m}
+                onPress={() => setScaleStr(String(m))}
+                className="rounded-full border border-line px-2.5 py-1.5 dark:border-line-dark">
+                <Text className="text-[13px] font-medium text-ink-sec dark:text-ink-dsec">{m}×</Text>
+              </Press>
+            ))}
+          </View>
         </View>
 
         <SectionLabel className="px-1 pb-2 pt-5">Meal</SectionLabel>

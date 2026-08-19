@@ -1,0 +1,1 @@
+ALTER TABLE `settings` ADD `goal_weight_kg` real;

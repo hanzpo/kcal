@@ -146,6 +146,8 @@ export const settings = sqliteTable('settings', {
   goalType: text('goal_type', { enum: ['lose', 'maintain', 'gain'] }),
   /** Signed % of bodyweight per week, e.g. -0.5 for a moderate cut. */
   goalRatePctPerWeek: real('goal_rate_pct_per_week'),
+  /** Optional target bodyweight for the projection on the Coach tab. */
+  goalWeightKg: real('goal_weight_kg'),
   proteinGPerKg: real('protein_g_per_kg').notNull().default(1.8),
   weightUnit: text('weight_unit', { enum: ['kg', 'lb'] })
     .notNull()
