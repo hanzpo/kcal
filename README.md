@@ -1,4 +1,4 @@
-# Tablet
+# OpenMacro
 
 A personal, local-first macro tracker — MacroFactor's adaptive coaching engine plus Cal AI's
 AI logging, with no accounts, no subscription, and all data in SQLite on the phone.
@@ -30,7 +30,7 @@ AI logging, with no accounts, no subscription, and all data in SQLite on the pho
 - **Charts** — weight (scale dots + trend line), expenditure history, energy balance,
   micro averages. Dark and light themes throughout.
 - **Apple Health sync** — two-way weight bridge. Smart-scale apps (Renpho, Withings, Eufy…)
-  write to Health; Tablet imports on launch/foreground and after "Sync now", and writes manual
+  write to Health; OpenMacro imports on launch/foreground and after "Sync now", and writes manual
   weigh-ins back so Health stays the single record. Enable in Settings → Integrations.
   (For Renpho: turn on Apple Health sync inside the Renpho app once.)
 - **Appearance** — follows iOS automatically, with a manual Auto/Light/Dark override in Settings.

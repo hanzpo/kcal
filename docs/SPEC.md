@@ -1,4 +1,4 @@
-# Tablet — Personal Macro Tracker (MacroFactor-class)
+# OpenMacro — Personal Macro Tracker (MacroFactor-class)
 
 Personal-use adaptive macro tracker: MacroFactor's coaching engine + Cal AI's AI logging,
 minus subscriptions, accounts, and bloat. Local-first (SQLite), architected for a later

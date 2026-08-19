@@ -89,7 +89,7 @@ export default function WeightSheet() {
         />
         <Text className="px-1 text-[12.5px] leading-[18px] text-ink-mut">
           Morning weigh-ins, after the bathroom and before eating, give the steadiest trend. Daily
-          fluctuation is water — Tablet smooths it out.
+          fluctuation is water — OpenMacro smooths it out.
         </Text>
       </View>
     </KeyboardAvoidingView>

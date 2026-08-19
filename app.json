@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "Tablet",
-    "slug": "tablet",
+    "name": "OpenMacro",
+    "slug": "openmacro",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "tablet",
+    "scheme": "openmacro",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "bundleIdentifier": "com.anonymous.tablet",
+      "bundleIdentifier": "com.hanzpo.openmacro",
       "icon": {
         "light": "./assets/images/icon.png",
         "dark": "./assets/images/icon-dark.png",
@@ -49,14 +49,14 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Tablet uses the camera to scan food barcodes and photograph meals for AI logging."
+          "cameraPermission": "OpenMacro uses the camera to scan food barcodes and photograph meals for AI logging."
         }
       ],
       [
         "@kingstinct/react-native-healthkit",
         {
-          "NSHealthShareUsageDescription": "Tablet reads your weight from Health so smart-scale weigh-ins count toward your trend.",
-          "NSHealthUpdateUsageDescription": "Tablet writes manual weigh-ins to Health so all your apps share one record.",
+          "NSHealthShareUsageDescription": "OpenMacro reads your weight from Health so smart-scale weigh-ins count toward your trend.",
+          "NSHealthUpdateUsageDescription": "OpenMacro writes manual weigh-ins to Health so all your apps share one record.",
           "background": false
         }
       ]

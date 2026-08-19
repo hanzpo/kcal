@@ -175,9 +175,9 @@ export default function Onboarding() {
     // 0 — welcome + units
     <View key="w" className="gap-6">
       <View className="gap-2">
-        <Text className="font-monosemi text-[42px] leading-[46px] text-ink dark:text-ink-inv">Tablet</Text>
+        <Text className="font-monosemi text-[42px] leading-[46px] text-ink dark:text-ink-inv">OpenMacro</Text>
         <Text className="text-[16px] leading-6 text-ink-sec dark:text-ink-dsec">
-          Log what you eat, weigh in when you can. Tablet learns your real energy burn and adjusts
+          Log what you eat, weigh in when you can. OpenMacro learns your real energy burn and adjusts
           your targets every week — no guesswork.
         </Text>
       </View>
@@ -231,7 +231,7 @@ export default function Onboarding() {
     <View key="a" className="gap-4">
       <Text className="text-[24px] font-bold text-ink dark:text-ink-inv">Activity level</Text>
       <Text className="-mt-2 text-[14px] text-ink-mut">
-        Just a starting point — Tablet replaces this estimate with your real data within two weeks.
+        Just a starting point — OpenMacro replaces this estimate with your real data within two weeks.
       </Text>
       <View className="gap-2">
         {ACTIVITIES.map((a) => (
