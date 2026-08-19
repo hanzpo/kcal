@@ -52,6 +52,13 @@ export async function getDailyIntakes(startDate: string, endDate: string): Promi
   return rows;
 }
 
+export async function getEntriesBetween(startDate: string, endDate: string): Promise<LogEntry[]> {
+  return db.query.logEntries.findMany({
+    where: and(alive, between(logEntries.date, startDate, endDate)),
+    orderBy: [asc(logEntries.date)],
+  });
+}
+
 export type LogEntryInput = Omit<NewLogEntry, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
 
 export async function insertEntry(input: LogEntryInput): Promise<LogEntry> {
