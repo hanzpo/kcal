@@ -80,10 +80,10 @@ export function MacroBar({
           </Text>
         </View>
       </View>
-      <View className="h-[6px] overflow-hidden rounded-full bg-raise dark:bg-raise-dark">
+      <View className="h-[3px] overflow-hidden bg-raise dark:bg-raise-dark">
         <View
-          className="h-full rounded-full"
-          style={{ width: `${pct * 100}%`, backgroundColor: color, opacity: pct >= 1 ? 1 : 0.9 }}
+          className="h-full"
+          style={{ width: `${pct * 100}%`, backgroundColor: color }}
         />
       </View>
     </View>

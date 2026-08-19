@@ -6,20 +6,20 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // warm paper / carbon neutrals
-        page: { DEFAULT: '#F4F4F1', dark: '#0D0D0D' },
-        card: { DEFAULT: '#FCFCFB', dark: '#1A1A19' },
-        raise: { DEFAULT: '#EDEDE8', dark: '#242422' }, // pressed / inset surfaces
+        // ledger: pure white page, near-black dark, hairline rules
+        page: { DEFAULT: '#FFFFFF', dark: '#0E0E0D' },
+        card: { DEFAULT: '#FFFFFF', dark: '#161615' },
+        raise: { DEFAULT: '#F1F0ED', dark: '#222220' }, // pressed / inset surfaces
         ink: {
-          DEFAULT: '#141412',
-          sec: '#52514E',
-          mut: '#8B8981',
-          faint: '#B8B6AD',
-          inv: '#F6F6F3',
-          dsec: '#C3C2B7',
-          dmut: '#8B8981',
+          DEFAULT: '#111110',
+          sec: '#55534E',
+          mut: '#8F8D88',
+          faint: '#BDBBB4',
+          inv: '#F2F1EE',
+          dsec: '#C9C7C0',
+          dmut: '#8F8D88',
         },
-        line: { DEFAULT: '#E4E3DC', dark: '#2C2C2A' },
+        line: { DEFAULT: '#E7E5E0', dark: '#262624' },
         // fixed macro identities (chart-safe, first three categorical slots)
         protein: { DEFAULT: '#2A78D6', dark: '#3987E5' },
         carbs: { DEFAULT: '#EB6834', dark: '#E06A38' },
@@ -29,12 +29,13 @@ module.exports = {
         good: { DEFAULT: '#0CA30C', dark: '#2DB82D' },
       },
       fontFamily: {
-        mono: ['IBMPlexMono_500Medium'],
-        monosemi: ['IBMPlexMono_600SemiBold'],
+        // numeral faces (legacy class names kept so every number reskins at once)
+        mono: ['InstrumentSans_600SemiBold'],
+        monosemi: ['InstrumentSans_700Bold'],
       },
       borderRadius: {
-        card: '20px',
-        chip: '12px',
+        card: '14px',
+        chip: '10px',
       },
     },
   },

@@ -77,7 +77,7 @@ export default function BarcodeScanner() {
             </>
           ) : (
             <View className="items-center gap-3 px-8">
-              <Icon name="camera.fill" size={26} tint="#8B8981" />
+              <Icon name="camera.fill" size={26} tint="#8F8D88" />
               <Text className="text-center text-[14px] text-white/80">
                 Camera access is needed to scan barcodes
               </Text>

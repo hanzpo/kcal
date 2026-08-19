@@ -24,14 +24,14 @@ export interface Palette {
 }
 
 export const LIGHT: Palette = {
-  page: '#F4F4F1',
-  card: '#FCFCFB',
-  raise: '#EDEDE8',
-  ink: '#141412',
-  inkSec: '#52514E',
-  inkMut: '#8B8981',
-  inkFaint: '#B8B6AD',
-  line: '#E4E3DC',
+  page: '#FFFFFF',
+  card: '#FFFFFF',
+  raise: '#F1F0ED',
+  ink: '#111110',
+  inkSec: '#55534E',
+  inkMut: '#8F8D88',
+  inkFaint: '#BDBBB4',
+  line: '#E7E5E0',
   protein: '#2A78D6',
   carbs: '#EB6834',
   fat: '#0FA371',
@@ -41,14 +41,14 @@ export const LIGHT: Palette = {
 };
 
 export const DARK: Palette = {
-  page: '#0D0D0D',
-  card: '#1A1A19',
-  raise: '#242422',
-  ink: '#F6F6F3',
-  inkSec: '#C3C2B7',
-  inkMut: '#8B8981',
-  inkFaint: '#5A5952',
-  line: '#2C2C2A',
+  page: '#0E0E0D',
+  card: '#161615',
+  raise: '#222220',
+  ink: '#F2F1EE',
+  inkSec: '#C9C7C0',
+  inkMut: '#8F8D88',
+  inkFaint: '#5C5A54',
+  line: '#262624',
   protein: '#3987E5',
   carbs: '#E06A38',
   fat: '#1BB47E',
@@ -61,5 +61,5 @@ export function usePalette(): Palette {
   return useColorScheme() === 'dark' ? DARK : LIGHT;
 }
 
-export const FONT_MONO = 'IBMPlexMono_500Medium';
-export const FONT_MONO_SEMI = 'IBMPlexMono_600SemiBold';
+export const FONT_MONO = 'InstrumentSans_600SemiBold';
+export const FONT_MONO_SEMI = 'InstrumentSans_700Bold';

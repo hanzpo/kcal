@@ -1,10 +1,11 @@
 import '../global.css';
 
 import {
-  IBMPlexMono_500Medium,
-  IBMPlexMono_600SemiBold,
+  InstrumentSans_500Medium,
+  InstrumentSans_600SemiBold,
+  InstrumentSans_700Bold,
   useFonts,
-} from '@expo-google-fonts/ibm-plex-mono';
+} from '@expo-google-fonts/instrument-sans';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { Stack } from 'expo-router';
@@ -58,7 +59,11 @@ async function syncHealthSilently() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({ IBMPlexMono_500Medium, IBMPlexMono_600SemiBold });
+  const [fontsLoaded] = useFonts({
+    InstrumentSans_500Medium,
+    InstrumentSans_600SemiBold,
+    InstrumentSans_700Bold,
+  });
   const { success: migrated, error: migrationError } = useMigrations(db, migrations);
   const [seeded, setSeeded] = useState(false);
 

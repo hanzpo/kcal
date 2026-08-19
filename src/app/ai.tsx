@@ -175,7 +175,7 @@ export default function AiLogging() {
                 <Press
                   onPress={() => pickImage(true)}
                   className="h-[120px] flex-1 items-center justify-center gap-2 rounded-card bg-ink dark:bg-ink-inv">
-                  <Icon name="camera.fill" size={24} tint={p.isDark ? '#141412' : '#F6F6F3'} />
+                  <Icon name="camera.fill" size={24} tint={p.isDark ? '#111110' : '#FFFFFF'} />
                   <Text className="text-[14px] font-semibold text-ink-inv dark:text-ink">Camera</Text>
                 </Press>
                 <Press

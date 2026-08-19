@@ -2,6 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import type { PropsWithChildren, ReactNode } from 'react';
 import { Pressable, Text, View, type PressableProps, type ViewProps } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { usePalette } from '@/lib/theme';
 
@@ -72,8 +73,8 @@ export function PrimaryButton({
     <Press
       onPress={onPress}
       disabled={disabled}
-      className={`h-[52px] flex-row items-center justify-center gap-2 rounded-2xl bg-ink dark:bg-ink-inv ${disabled ? 'opacity-40' : ''} ${className ?? ''}`}>
-      {icon ? <SymbolView name={icon} size={17} tintColor={p.isDark ? '#141412' : '#F6F6F3'} weight="semibold" /> : null}
+      className={`h-[52px] flex-row items-center justify-center gap-2 rounded-[12px] bg-ink dark:bg-ink-inv ${disabled ? 'opacity-40' : ''} ${className ?? ''}`}>
+      {icon ? <SymbolView name={icon} size={17} tintColor={p.isDark ? '#111110' : '#FFFFFF'} weight="semibold" /> : null}
       <Text className="text-[16px] font-semibold text-ink-inv dark:text-ink">{label}</Text>
     </Press>
   );
@@ -91,7 +92,7 @@ export function GhostButton({
   return (
     <Press
       onPress={onPress}
-      className={`h-[48px] items-center justify-center rounded-2xl border border-line bg-transparent dark:border-line-dark ${className ?? ''}`}>
+      className={`h-[48px] items-center justify-center rounded-[12px] border border-line bg-transparent dark:border-line-dark ${className ?? ''}`}>
       <Text className="text-[15px] font-semibold text-ink dark:text-ink-inv">{label}</Text>
     </Press>
   );
@@ -124,6 +125,27 @@ export function Stat({
       </View>
       <SectionLabel className="mt-0.5 tracking-[1px]">{label}</SectionLabel>
     </View>
+  );
+}
+
+/** Floating add button, bottom-right above the native tab bar. */
+export function AddButton({ onPress }: { onPress: () => void }) {
+  const p = usePalette();
+  const insets = useSafeAreaInsets();
+  return (
+    <Press
+      onPress={onPress}
+      className="absolute right-5 h-[56px] w-[56px] items-center justify-center rounded-[16px] bg-ink dark:bg-ink-inv"
+      style={{
+        // clear the floating liquid-glass tab bar
+        bottom: insets.bottom + 66,
+        shadowColor: '#000',
+        shadowOpacity: 0.18,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 4 },
+      }}>
+      <SymbolView name="plus" size={24} tintColor={p.isDark ? '#111110' : '#FFFFFF'} weight="semibold" />
+    </Press>
   );
 }
 

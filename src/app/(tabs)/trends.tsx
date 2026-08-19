@@ -21,7 +21,7 @@ const RANGES = [
   { label: 'All', days: 3650 },
 ];
 
-const AXIS_FONT = require('@expo-google-fonts/ibm-plex-mono/500Medium/IBMPlexMono_500Medium.ttf');
+const AXIS_FONT = require('@expo-google-fonts/instrument-sans/500Medium/InstrumentSans_500Medium.ttf');
 
 const TRACKED_MICROS: MicroKey[] = ['fiberG', 'sugarG', 'satFatG', 'sodiumMg', 'potassiumMg', 'calciumMg', 'ironMg'];
 

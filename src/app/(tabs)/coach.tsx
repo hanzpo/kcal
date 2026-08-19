@@ -285,7 +285,7 @@ export default function Coach() {
                     value={goalWeightStr}
                     onChangeText={setGoalWeightStr}
                     placeholder={goal === 'lose' ? '165' : '190'}
-                    placeholderTextColor="#8B8981"
+                    placeholderTextColor="#8F8D88"
                     keyboardType="decimal-pad"
                     className="h-[40px] flex-1 font-mono text-[15px] text-ink dark:text-ink-inv"
                   />

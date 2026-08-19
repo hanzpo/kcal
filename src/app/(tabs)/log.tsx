@@ -9,7 +9,7 @@ import { copyMeal, getLoggedDates } from '@/repos/logs';
 
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 
-import { Card, Icon, Press, SectionLabel } from '@/components/ui';
+import { AddButton, Card, Icon, Press, SectionLabel } from '@/components/ui';
 import type { LogEntry } from '@/db/schema';
 import { useDayLog, useLogMutations, useTargetForDate } from '@/hooks/queries';
 import { addDaysStr, formatDayTitle, MEAL_LABELS, MEALS, todayStr, type Meal } from '@/lib/dates';
@@ -188,6 +188,7 @@ function WeekStrip({ date, onSelect }: { date: string; onSelect: (d: string) => 
 export default function Log() {
   const insets = useSafeAreaInsets();
   const p = usePalette();
+  const router = useRouter();
   const [dateOverride, setDate] = useAtom(logDateAtom);
   const date = dateOverride ?? todayStr();
   const { data: day } = useDayLog(date);
@@ -247,6 +248,7 @@ export default function Log() {
           <MealSection key={m} meal={m} date={date} />
         ))}
       </ScrollView>
+      <AddButton onPress={() => router.push('/add')} />
     </View>
   );
 }

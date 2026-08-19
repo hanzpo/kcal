@@ -81,7 +81,7 @@ function NumberField({
         value={value}
         onChangeText={onChange}
         placeholder={placeholder}
-        placeholderTextColor="#B8B6AD"
+        placeholderTextColor="#BDBBB4"
         keyboardType="decimal-pad"
         className="h-[54px] flex-1 font-mono text-[20px] text-ink dark:text-ink-inv"
       />
