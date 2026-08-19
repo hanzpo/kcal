@@ -233,7 +233,7 @@ export default function Settings() {
                 className="h-8 w-8 items-center justify-center rounded-full bg-raise dark:bg-raise-dark">
                 <Text className="text-[16px] text-ink dark:text-ink-inv">−</Text>
               </Press>
-              <Text className="w-10 text-center font-mono text-[15px] text-ink dark:text-ink-inv">
+              <Text className="w-12 text-center font-mono text-[15px] text-ink dark:text-ink-inv">
                 {displayProtein}
               </Text>
               <Press

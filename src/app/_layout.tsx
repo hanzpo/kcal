@@ -12,7 +12,7 @@ import * as SecureStore from 'expo-secure-store';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { Appearance, LogBox, Text, View } from 'react-native';
+import { Appearance, AppState, LogBox, Text, View } from 'react-native';
 
 import { readHealthSyncPref, readThemePref } from '@/lib/prefs';
 import { importWeightsFromHealth } from '@/services/health';
@@ -35,6 +35,22 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5_000, retry: 1 } },
 });
 
+let lastHealthSync = 0;
+async function syncHealthSilently() {
+  if (!readHealthSyncPref()) return;
+  if (Date.now() - lastHealthSync < 5 * 60_000) return;
+  lastHealthSync = Date.now();
+  try {
+    const changed = await importWeightsFromHealth(90);
+    if (changed > 0) {
+      queryClient.invalidateQueries({ queryKey: ['weights'] });
+      queryClient.invalidateQueries({ queryKey: ['coaching'] });
+    }
+  } catch {
+    // best-effort background sync
+  }
+}
+
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({ IBMPlexMono_500Medium, IBMPlexMono_600SemiBold });
   const { success: migrated, error: migrationError } = useMigrations(db, migrations);
@@ -49,19 +65,14 @@ export default function RootLayout() {
       } finally {
         setSeeded(true);
       }
-      // silent Apple Health weight sync (Renpho etc.) when enabled
-      if (readHealthSyncPref()) {
-        try {
-          const changed = await importWeightsFromHealth(90);
-          if (changed > 0) {
-            queryClient.invalidateQueries({ queryKey: ['weights'] });
-            queryClient.invalidateQueries({ queryKey: ['coaching'] });
-          }
-        } catch {
-          // best-effort background sync
-        }
-      }
+      syncHealthSilently();
     })();
+
+    // re-sync when the app returns to foreground (morning scale → open app)
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') syncHealthSilently();
+    });
+    return () => sub.remove();
   }, [migrated]);
 
   const ready = fontsLoaded && migrated && seeded;

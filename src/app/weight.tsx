@@ -82,13 +82,15 @@ export default function WeightSheet() {
           <SectionLabel>{unit}</SectionLabel>
         </View>
 
+        <PrimaryButton
+          label="Save weigh-in"
+          onPress={save}
+          disabled={upsert.isPending || !(parseFloat(valueStr) > 0)}
+        />
         <Text className="px-1 text-[12.5px] leading-[18px] text-ink-mut">
           Morning weigh-ins, after the bathroom and before eating, give the steadiest trend. Daily
           fluctuation is water — Tablet smooths it out.
         </Text>
-      </View>
-      <View className="px-5" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
-        <PrimaryButton label="Save weigh-in" onPress={save} disabled={upsert.isPending || !(parseFloat(valueStr) > 0)} />
       </View>
     </KeyboardAvoidingView>
   );
