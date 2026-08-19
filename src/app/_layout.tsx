@@ -12,7 +12,7 @@ import * as SecureStore from 'expo-secure-store';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { LogBox, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { db } from '@/db/client';
@@ -21,6 +21,8 @@ import { seedFoodsIfNeeded } from '@/db/seed';
 import { setFdcApiKey } from '@/services/foodApi';
 
 SplashScreen.preventAutoHideAsync();
+// warnings stay visible in the Metro terminal; in-app toasts just get in the way
+LogBox.ignoreAllLogs();
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5_000, retry: 1 } },

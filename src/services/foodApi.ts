@@ -17,6 +17,16 @@ export function setFdcApiKey(key: string | null | undefined) {
 const clean = (v: unknown): number | null =>
   typeof v === 'number' && isFinite(v) ? v : null;
 
+/** OFF sometimes returns numeric fields as strings ("15"). */
+const numeric = (v: unknown): number | null => {
+  if (typeof v === 'number') return isFinite(v) ? v : null;
+  if (typeof v === 'string') {
+    const n = parseFloat(v);
+    return isFinite(n) && n > 0 ? n : null;
+  }
+  return null;
+};
+
 // ---------------------------------------------------------------------------
 // Open Food Facts
 
@@ -66,7 +76,7 @@ function normalizeOffProduct(p: any): FoodInput | null {
   const fatG = clean(n['fat_100g']);
   if (kcal == null || kcal > 900 || proteinG == null || carbsG == null || fatG == null) return null;
 
-  const servingGrams = clean(p.serving_quantity);
+  const servingGrams = numeric(p.serving_quantity);
   const name = typeof p.product_name === 'string' && p.product_name.trim() ? p.product_name.trim() : null;
   if (!name) return null;
   const brandsRaw = Array.isArray(p.brands) ? p.brands.join(', ') : p.brands;
