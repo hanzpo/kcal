@@ -22,8 +22,11 @@ AI logging, with no accounts, no subscription, and all data in SQLite on the pho
   - **AI describe** — type the meal, get an itemized estimate, correct it with free text
     ("that was brown rice, about 2 cups") and re-estimate
   - Quick add (kcal + optional macros)
-- **Diary** with meal sections, snapshot nutrition (editing a food never rewrites history),
-  portion re-scaling, micronutrient detail per food and 7-day averages.
+- **Diary** with meal sections, a 7-day strip with logged-day dots, swipe-to-delete,
+  snapshot nutrition (editing a food never rewrites history), portion re-scaling,
+  micronutrient detail per food and 7-day averages.
+- **Goal projection** — set an optional goal weight on the Coach tab and see
+  "on pace for X around ‹date›" computed from your configured rate.
 - **Charts** — weight (scale dots + trend line), expenditure history, energy balance,
   micro averages. Dark and light themes throughout.
 - **Apple Health sync** — two-way weight bridge. Smart-scale apps (Renpho, Withings, Eufy…)
