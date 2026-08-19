@@ -75,7 +75,7 @@ export default function RootLayout() {
           <Stack.Screen name="ai" options={{ presentation: 'modal' }} />
           <Stack.Screen name="barcode" options={{ presentation: 'modal' }} />
           <Stack.Screen name="quick" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="weight" options={{ presentation: 'formSheet', sheetAllowedDetents: [0.4] }} />
+          <Stack.Screen name="weight" options={{ presentation: 'formSheet', sheetAllowedDetents: [0.55] }} />
           <Stack.Screen name="food/[id]" options={{ presentation: 'modal' }} />
           <Stack.Screen name="entry/[id]" options={{ presentation: 'modal' }} />
           <Stack.Screen name="settings" options={{ presentation: 'modal' }} />

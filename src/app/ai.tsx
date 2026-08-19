@@ -2,16 +2,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Image, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Card, GhostButton, Icon, Press, PrimaryButton, SectionLabel } from '@/components/ui';
@@ -142,15 +133,14 @@ export default function AiLogging() {
   );
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      className="flex-1 bg-page pt-3.5 dark:bg-page-dark">
+    <View className="flex-1 bg-page pt-3.5 dark:bg-page-dark">
       <View className="items-center pb-3">
         <View className="h-[5px] w-9 rounded-full bg-line dark:bg-line-dark" />
       </View>
       <ScrollView
         className="flex-1 px-4"
         keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
         contentContainerStyle={{ paddingBottom: 24 }}>
         <View className="flex-row items-center gap-2 px-1 pb-3">
           <Icon name="sparkles" size={20} tint={p.energy} />
@@ -353,6 +343,6 @@ export default function AiLogging() {
         ) : null}
       </ScrollView>
       <View style={{ paddingBottom: insets.bottom }} />
-    </KeyboardAvoidingView>
+    </View>
   );
 }

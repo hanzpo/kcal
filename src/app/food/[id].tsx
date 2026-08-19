@@ -69,7 +69,12 @@ export default function FoodDetail() {
       <View className="items-center pb-3">
         <View className="h-[5px] w-9 rounded-full bg-line dark:bg-line-dark" />
       </View>
-      <ScrollView className="flex-1 px-4" keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 24 }}>
+      <ScrollView
+        className="flex-1 px-4"
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        automaticallyAdjustKeyboardInsets
+        contentContainerStyle={{ paddingBottom: 24 }}>
         {/* Title */}
         <View className="flex-row items-start justify-between px-1 pb-4">
           <View className="flex-1 pr-3">
