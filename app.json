@@ -1,14 +1,14 @@
 {
   "expo": {
     "name": "Kcal",
-    "slug": "openmacro",
+    "slug": "kcal",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "openmacro",
+    "scheme": "kcal",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "bundleIdentifier": "com.hanzpo.openmacro",
+      "bundleIdentifier": "com.hanzpo.kcal",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
@@ -70,8 +70,9 @@
     },
     "extra": {
       "router": {},
+      "anthropicApiKey": {},
       "eas": {
-        "projectId": "fc6ba2fc-3fb3-4138-b1d7-09c2f4c26c8f"
+        "projectId": "124663b9-0a73-4486-b7a6-f08fc2fd6df5"
       }
     },
     "owner": "hanzpo"

@@ -3,7 +3,7 @@ import { execSync } from 'node:child_process';
 
 import { computeExpenditure, computeWeightTrend } from '../src/services/coaching';
 
-const app = execSync('xcrun simctl get_app_container booted com.hanzpo.openmacro data')
+const app = execSync('xcrun simctl get_app_container booted com.hanzpo.kcal data')
   .toString()
   .trim();
 const db = `${app}/Documents/SQLite/tablet.db`;

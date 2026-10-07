@@ -16,8 +16,8 @@ import { todayStr } from '@/lib/dates';
 const BACKUP_VERSION = 1;
 
 interface Backup {
-  /** 'tablet' was the pre-rename marker; imports accept both. */
-  app: 'openmacro' | 'tablet';
+  /** 'openmacro' and 'tablet' were pre-rename markers; imports accept all three. */
+  app: 'kcal' | 'openmacro' | 'tablet';
   version: number;
   exportedAt: string;
   foods: unknown[];
@@ -29,7 +29,7 @@ interface Backup {
 
 export async function buildBackup(): Promise<Backup> {
   return {
-    app: 'openmacro',
+    app: 'kcal',
     version: BACKUP_VERSION,
     exportedAt: new Date().toISOString(),
     foods: await db.select().from(foods),
@@ -55,8 +55,8 @@ export async function importFromFile(): Promise<{ imported: boolean; counts?: st
 
   const raw = await new File(picked.assets[0].uri).text();
   const backup = JSON.parse(raw) as Backup;
-  if ((backup.app !== 'openmacro' && backup.app !== 'tablet') || !Array.isArray(backup.foods)) {
-    throw new Error('Not an Kcal backup file.');
+  if (!['kcal', 'openmacro', 'tablet'].includes(backup.app) || !Array.isArray(backup.foods)) {
+    throw new Error('Not a Kcal backup file.');
   }
 
   let total = 0;
