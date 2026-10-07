@@ -6,7 +6,7 @@ import type { FoodInput } from '@/repos/foods';
  * app's per-100g FoodInput shape before it leaves this module.
  */
 
-const OFF_UA = 'OpenMacro/1.0 (personal macro tracker; hanznathanpo@gmail.com)';
+const OFF_UA = 'Kcal/1.0 (personal macro tracker; hanznathanpo@gmail.com)';
 const FDC_BASE = 'https://api.nal.usda.gov/fdc/v1';
 
 let fdcApiKey = 'DEMO_KEY';

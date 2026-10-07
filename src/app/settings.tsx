@@ -254,7 +254,7 @@ export default function Settings() {
     if (!ok) {
       Alert.alert(
         'Health access',
-        'OpenMacro needs Health permission to read weight. You can grant it in the Health app → Sharing.',
+        'Kcal needs Health permission to read weight. You can grant it in the Health app → Sharing.',
       );
     }
     setHealthSync(true);
@@ -462,7 +462,7 @@ export default function Settings() {
             <View className="flex-1 pr-3">
               <Text className="text-[15px] font-medium text-ink dark:text-ink-inv">Apple Health</Text>
               <Text className="pt-0.5 text-[12px] leading-4 text-ink-mut">
-                Smart-scale weigh-ins (Renpho, Withings…) flow in via Health; OpenMacro writes manual
+                Smart-scale weigh-ins (Renpho, Withings…) flow in via Health; Kcal writes manual
                 entries back.
               </Text>
             </View>
@@ -534,7 +534,7 @@ export default function Settings() {
         </Card>
 
         <Text className="px-2 text-[11.5px] leading-4 text-ink-faint">
-          OpenMacro · local-first macro tracker. All data lives in SQLite on this phone; sign in to
+          Kcal · local-first macro tracker. All data lives in SQLite on this phone; sign in to
           cloud sync (or export a backup) before switching devices.
         </Text>
       </ScrollView>

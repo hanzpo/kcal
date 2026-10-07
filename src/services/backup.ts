@@ -42,10 +42,10 @@ export async function buildBackup(): Promise<Backup> {
 
 export async function exportAndShare(): Promise<void> {
   const backup = await buildBackup();
-  const file = new File(Paths.cache, `openmacro-backup-${todayStr()}.json`);
+  const file = new File(Paths.cache, `kcal-backup-${todayStr()}.json`);
   if (file.exists) file.delete();
   file.write(JSON.stringify(backup));
-  await Sharing.shareAsync(file.uri, { mimeType: 'application/json', dialogTitle: 'Export OpenMacro data' });
+  await Sharing.shareAsync(file.uri, { mimeType: 'application/json', dialogTitle: 'Export Kcal data' });
 }
 
 /** Restore from a backup file. Merges by row id: newest updatedAt wins. */
@@ -56,7 +56,7 @@ export async function importFromFile(): Promise<{ imported: boolean; counts?: st
   const raw = await new File(picked.assets[0].uri).text();
   const backup = JSON.parse(raw) as Backup;
   if ((backup.app !== 'openmacro' && backup.app !== 'tablet') || !Array.isArray(backup.foods)) {
-    throw new Error('Not an OpenMacro backup file.');
+    throw new Error('Not an Kcal backup file.');
   }
 
   let total = 0;

@@ -10,7 +10,7 @@ import { getAllWeights, upsertWeight } from '@/repos/weights';
 
 /**
  * Apple Health bridge — the integration path for smart scales (Renpho, Withings,
- * Eufy…): their apps write body mass to Health; OpenMacro imports it. OpenMacro also
+ * Eufy…): their apps write body mass to Health; Kcal imports it. Kcal also
  * writes its own manual weigh-ins back so Health stays the single record.
  */
 
@@ -68,7 +68,7 @@ export async function importWeightsFromHealth(days = 365): Promise<number> {
   return changed;
 }
 
-/** Write a OpenMacro weigh-in to Health (no-op if unavailable/unauthorized). */
+/** Write a Kcal weigh-in to Health (no-op if unavailable/unauthorized). */
 export async function exportWeightToHealth(date: string, weightKg: number): Promise<void> {
   if (!healthAvailable()) return;
   try {

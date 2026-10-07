@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "OpenMacro",
+    "name": "Kcal",
     "slug": "openmacro",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -52,14 +52,14 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "OpenMacro uses the camera to scan food barcodes and photograph meals for AI logging."
+          "cameraPermission": "Kcal uses the camera to scan food barcodes and photograph meals for AI logging."
         }
       ],
       [
         "@kingstinct/react-native-healthkit",
         {
-          "NSHealthShareUsageDescription": "OpenMacro reads your weight from Health so smart-scale weigh-ins count toward your trend.",
-          "NSHealthUpdateUsageDescription": "OpenMacro writes manual weigh-ins to Health so all your apps share one record.",
+          "NSHealthShareUsageDescription": "Kcal reads your weight from Health so smart-scale weigh-ins count toward your trend.",
+          "NSHealthUpdateUsageDescription": "Kcal writes manual weigh-ins to Health so all your apps share one record.",
           "background": false
         }
       ]

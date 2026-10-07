@@ -185,9 +185,9 @@ export default function Onboarding() {
     // 0 — welcome + units
     <View key="w" className="gap-6">
       <View className="gap-2">
-        <Text className="font-monosemi text-[42px] leading-[46px] text-ink dark:text-ink-inv">OpenMacro</Text>
+        <Text className="font-monosemi text-[42px] leading-[46px] text-ink dark:text-ink-inv">Kcal</Text>
         <Text className="text-[16px] leading-6 text-ink-sec dark:text-ink-dsec">
-          Log your food and weigh in. OpenMacro learns your real burn rate from the data and keeps
+          Log your food and weigh in. Kcal learns your real burn rate from the data and keeps
           your targets honest.
         </Text>
       </View>
